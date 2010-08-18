@@ -9,7 +9,7 @@ import com.nolanlawson.chordfinder.chords.Chord;
 import com.nolanlawson.chordfinder.chords.ChordAdded;
 import com.nolanlawson.chordfinder.chords.ChordQuality;
 import com.nolanlawson.chordfinder.chords.ChordRoot;
-import com.nolanlawson.chordfinder.chords.ChordSeventh;
+import com.nolanlawson.chordfinder.chords.ChordExtended;
 import com.nolanlawson.chordfinder.chords.ChordSuspended;
 
 public class ChordParser {
@@ -40,7 +40,7 @@ public class ChordParser {
 			
 			// seventh and quality are typically written in the same place in the chord name's lexical structure
 			ChordQuality chordQuality = ChordQuality.Major;
-			ChordSeventh chordSeventh = ChordSeventh.findByAlias(qualityOrSeventh);
+			ChordExtended chordSeventh = ChordExtended.findByAlias(qualityOrSeventh);
 			
 			if (chordSeventh == null) {
 				chordQuality = ChordQuality.findByAlias(qualityOrSeventh);

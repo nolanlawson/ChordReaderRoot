@@ -9,7 +9,7 @@ import static com.nolanlawson.chordfinder.chords.ChordRoot.*;
 import static com.nolanlawson.chordfinder.chords.ChordAdded.*;
 import static com.nolanlawson.chordfinder.chords.ChordSuspended.*;
 import static com.nolanlawson.chordfinder.chords.ChordQuality.*;
-import static com.nolanlawson.chordfinder.chords.ChordSeventh.*;
+import static com.nolanlawson.chordfinder.chords.ChordExtended.*;
 
 public class RegexTest extends
 		ActivityInstrumentationTestCase2<FindChordsActivity> {
@@ -66,6 +66,21 @@ public class RegexTest extends
 		testRegex("CM", Chord.newChord(C, Major, null, null, null, null));
 		testRegex("Cm", Chord.newChord(C, Minor, null, null, null, null));
 		
+	}
+	
+	public void test7() {
+		testRegex("C2", Chord.newChord(C, Major, null, Add9, null, null));
+		testRegex("C4", Chord.newChord(C, Major, null, Add11, null, null));
+	}
+	
+	public void test8() {
+		testRegex("C9", Chord.newChord(C, Major, Major9, null, null, null));
+		testRegex("C11", Chord.newChord(C, Major, Major11, null, null, null));
+		testRegex("C13", Chord.newChord(C, Major, Major13, null, null, null));
+	}
+	
+	public void test9() {
+		testRegex("Foobar", null);
 	}
 	
 	public void testRegex(String chordString, Chord expected) {

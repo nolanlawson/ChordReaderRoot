@@ -4,7 +4,7 @@ public class Chord {
 
 	private ChordRoot root;
 	private ChordQuality quality;
-	private ChordSeventh seventh;
+	private ChordExtended seventh;
 	private ChordAdded added;
 	private ChordSuspended suspended;
 	private ChordRoot overridingRoot;
@@ -21,10 +21,10 @@ public class Chord {
 	public void setQuality(ChordQuality quality) {
 		this.quality = quality;
 	}
-	public ChordSeventh getSeventh() {
+	public ChordExtended getSeventh() {
 		return seventh;
 	}
-	public void setSeventh(ChordSeventh seventh) {
+	public void setSeventh(ChordExtended seventh) {
 		this.seventh = seventh;
 	}
 	public ChordAdded getAdded() {
@@ -49,7 +49,7 @@ public class Chord {
 		this.overridingRoot = overridingRoot;
 	}
 	
-	public static Chord newChord(ChordRoot root, ChordQuality quality, ChordSeventh seventh,
+	public static Chord newChord(ChordRoot root, ChordQuality quality, ChordExtended seventh,
 			ChordAdded added, ChordSuspended suspended, ChordRoot overridingRoot) {
 		
 		Chord chord = new Chord();

@@ -12,8 +12,8 @@ import com.nolanlawson.chordfinder.util.ArrayUtil;
  */
 public enum ChordAdded {
 
-	Add9 (new String[]{"add9"}),
-	Add11 (new String[]{"add11"});
+	Add9 (new String[]{"add9", "2"}),
+	Add11 (new String[]{"add11", "4"});
 	
 	private String[] aliases;
 	

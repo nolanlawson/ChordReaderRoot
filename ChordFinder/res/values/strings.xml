@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, FindChordsActivity!</string>
     <string name="app_name">Chord Finder</string>
+    <string name="find_chords_intro_message">Use the web view below to find chords.</string>
+    <string name="chord_search_hint">Enter song/artist name to search</string>
+    <string name="chords_keyword">chords</string>
+    <string name="chords_found">Chords identified. Click here to confirm.</string>
+    <string name="confirm_chordchart">Confirm Chords</string>
 </resources>

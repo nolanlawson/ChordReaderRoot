@@ -9,7 +9,7 @@ import android.text.TextUtils;
 import com.nolanlawson.chordfinder.chords.ChordAdded;
 import com.nolanlawson.chordfinder.chords.ChordQuality;
 import com.nolanlawson.chordfinder.chords.ChordRoot;
-import com.nolanlawson.chordfinder.chords.ChordSeventh;
+import com.nolanlawson.chordfinder.chords.ChordExtended;
 import com.nolanlawson.chordfinder.chords.ChordSuspended;
 import com.nolanlawson.chordfinder.util.ArrayUtil;
 
@@ -20,7 +20,7 @@ public class ChordRegex {
 			greedyDisjunction(ChordRoot.getAllAliases(), true) + // root note
 			optional(greedyDisjunction(ArrayUtil.concatenate(
 					ChordQuality.getAllAliases(), 
-					ChordSeventh.getAllAliases()))) + // quality OR seventh
+					ChordExtended.getAllAliases()))) + // quality OR seventh
 			optional(greedyDisjunction(ChordAdded.getAllAliases())) + // add
 			optional(greedyDisjunction(ChordSuspended.getAllAliases())) + // sus
 			optional("(?:/" + greedyDisjunction(ChordRoot.getAllAliases()) + ")") + // overridden root note ("over")
