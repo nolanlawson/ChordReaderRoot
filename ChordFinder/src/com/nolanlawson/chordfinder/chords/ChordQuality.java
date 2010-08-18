@@ -1,5 +1,8 @@
 package com.nolanlawson.chordfinder.chords;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.nolanlawson.chordfinder.util.ArrayUtil;
 
 /**
@@ -32,5 +35,28 @@ public enum ChordQuality {
 		}
 		
 		return result;
+	}	
+	
+	
+	private static Map<String,ChordQuality> lookupMap = new HashMap<String, ChordQuality>();
+	
+	static {
+		for (ChordQuality value : values()) {
+			for (String alias : value.aliases) {
+				lookupMap.put(alias.toLowerCase(), value);
+			}
+		}
+	}
+	
+	public static ChordQuality findByAlias(String alias) {
+		
+		// special case for 'm'
+		if (alias.equals("m")) {
+			return Minor;
+		} else if (alias.equals("M")) {
+			return Major;
+		}
+		
+		return lookupMap.get(alias.toLowerCase());
 	}	
 }

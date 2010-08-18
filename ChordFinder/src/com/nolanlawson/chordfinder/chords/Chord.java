@@ -1,0 +1,128 @@
+package com.nolanlawson.chordfinder.chords;
+
+public class Chord {
+
+	private ChordRoot root;
+	private ChordQuality quality;
+	private ChordSeventh seventh;
+	private ChordAdded added;
+	private ChordSuspended suspended;
+	private ChordRoot overridingRoot;
+	
+	public ChordRoot getRoot() {
+		return root;
+	}
+	public void setRoot(ChordRoot root) {
+		this.root = root;
+	}
+	public ChordQuality getQuality() {
+		return quality;
+	}
+	public void setQuality(ChordQuality quality) {
+		this.quality = quality;
+	}
+	public ChordSeventh getSeventh() {
+		return seventh;
+	}
+	public void setSeventh(ChordSeventh seventh) {
+		this.seventh = seventh;
+	}
+	public ChordAdded getAdded() {
+		return added;
+	}
+	public void setAdded(ChordAdded added) {
+		this.added = added;
+	}
+	public ChordSuspended getSuspended() {
+		return suspended;
+	}
+	public void setSuspended(ChordSuspended suspended) {
+		this.suspended = suspended;
+	}
+	
+	
+	
+	public ChordRoot getOverridingRoot() {
+		return overridingRoot;
+	}
+	public void setOverridingRoot(ChordRoot overridingRoot) {
+		this.overridingRoot = overridingRoot;
+	}
+	
+	public static Chord newChord(ChordRoot root, ChordQuality quality, ChordSeventh seventh,
+			ChordAdded added, ChordSuspended suspended, ChordRoot overridingRoot) {
+		
+		Chord chord = new Chord();
+		
+		chord.root = root;
+		chord.quality = quality;
+		chord.seventh = seventh;
+		chord.added = added;
+		chord.suspended = suspended;
+		chord.overridingRoot = overridingRoot;
+		
+		return chord;
+	}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((added == null) ? 0 : added.hashCode());
+		result = prime * result
+				+ ((overridingRoot == null) ? 0 : overridingRoot.hashCode());
+		result = prime * result + ((quality == null) ? 0 : quality.hashCode());
+		result = prime * result + ((root == null) ? 0 : root.hashCode());
+		result = prime * result + ((seventh == null) ? 0 : seventh.hashCode());
+		result = prime * result
+				+ ((suspended == null) ? 0 : suspended.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Chord other = (Chord) obj;
+		if (added == null) {
+			if (other.added != null)
+				return false;
+		} else if (!added.equals(other.added))
+			return false;
+		if (overridingRoot == null) {
+			if (other.overridingRoot != null)
+				return false;
+		} else if (!overridingRoot.equals(other.overridingRoot))
+			return false;
+		if (quality == null) {
+			if (other.quality != null)
+				return false;
+		} else if (!quality.equals(other.quality))
+			return false;
+		if (root == null) {
+			if (other.root != null)
+				return false;
+		} else if (!root.equals(other.root))
+			return false;
+		if (seventh == null) {
+			if (other.seventh != null)
+				return false;
+		} else if (!seventh.equals(other.seventh))
+			return false;
+		if (suspended == null) {
+			if (other.suspended != null)
+				return false;
+		} else if (!suspended.equals(other.suspended))
+			return false;
+		return true;
+	}
+	@Override
+	public String toString() {
+		return "Chord [added=" + added + ", overridingRoot=" + overridingRoot
+				+ ", quality=" + quality + ", root=" + root + ", seventh="
+				+ seventh + ", suspended=" + suspended + "]";
+	}
+	
+}

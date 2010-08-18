@@ -3,6 +3,11 @@ package com.nolanlawson.chordfinder.chords;
 
 import static com.nolanlawson.chordfinder.chords.ChordQuality.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import com.nolanlawson.chordfinder.util.ArrayUtil;
+
 public enum ChordSeventh {
 
 	
@@ -34,5 +39,39 @@ public enum ChordSeventh {
 	public ChordQuality getChordQuality() {
 		return chordQuality;
 	}
+	
+	
+	public static String[] getAllAliases() {
+		String[] result = new String[0];
+		
+		for (ChordSeventh chordSeventh : values()) {
+			result = ArrayUtil.concatenate(result, chordSeventh.aliases);
+		}
+		
+		return result;
+	}		
+	
+	
+	private static Map<String,ChordSeventh> lookupMap = new HashMap<String, ChordSeventh>();
+	
+	static {
+		for (ChordSeventh value : values()) {
+			for (String alias : value.aliases) {
+				lookupMap.put(alias.toLowerCase(), value);
+			}
+		}
+	}
+	
+	public static ChordSeventh findByAlias(String alias) {
+		
+		// special case for M7 and m7
+		if (alias.equals("M7")) {
+			return Major7;
+		} else if (alias.equals("m7")) {
+			return Minor7;
+		}
+		
+		return lookupMap.get(alias.toLowerCase());
+	}	
 	
 }

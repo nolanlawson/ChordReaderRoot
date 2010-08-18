@@ -1,5 +1,8 @@
 package com.nolanlawson.chordfinder.chords;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.nolanlawson.chordfinder.util.ArrayUtil;
 
 /**
@@ -41,5 +44,20 @@ public enum ChordRoot {
 		}
 		
 		return result;
+	}
+	
+	
+	private static Map<String,ChordRoot> lookupMap = new HashMap<String, ChordRoot>();
+	
+	static {
+		for (ChordRoot value : values()) {
+			for (String alias : value.aliases) {
+				lookupMap.put(alias.toLowerCase(), value);
+			}
+		}
+	}
+	
+	public static ChordRoot findByAlias(String alias) {
+		return lookupMap.get(alias.toLowerCase());
 	}
 }

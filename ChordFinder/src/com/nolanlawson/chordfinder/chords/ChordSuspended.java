@@ -1,5 +1,8 @@
 package com.nolanlawson.chordfinder.chords;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.nolanlawson.chordfinder.util.ArrayUtil;
 
 /**
@@ -30,5 +33,20 @@ public enum ChordSuspended {
 		}
 		
 		return result;
+	}	
+	
+	
+	private static Map<String,ChordSuspended> lookupMap = new HashMap<String, ChordSuspended>();
+	
+	static {
+		for (ChordSuspended value : values()) {
+			for (String alias : value.aliases) {
+				lookupMap.put(alias.toLowerCase(), value);
+			}
+		}
+	}
+	
+	public static ChordSuspended findByAlias(String alias) {
+		return lookupMap.get(alias.toLowerCase());
 	}	
 }
