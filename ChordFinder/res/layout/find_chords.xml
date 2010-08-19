@@ -12,35 +12,47 @@
 		<LinearLayout android:layout_width="0px"
 			android:layout_weight="1.0" android:layout_height="wrap_content"
 			android:orientation="horizontal" android:gravity="center_vertical|center_horizontal"
-					android:background="@drawable/app_selector"
-			android:selectable="true" android:clickable="true" android:focusable="true" android:padding="5dp"
-			android:id="@+id/find_chords_message_secondary_view"
-			>
+			android:background="@drawable/app_selector" android:selectable="true"
+			android:clickable="true" android:focusable="true" android:padding="5dp"
+			android:id="@+id/find_chords_message_secondary_view">
 
 			<ImageView android:src="@drawable/ic_dialog_info"
 				android:layout_width="wrap_content" android:layout_height="wrap_content"
-				android:paddingRight="10dp" />
+				android:paddingRight="10dp" android:id="@+id/find_chords_image_view"
+				 />
 
+			<ProgressBar android:id="@+id/find_chords_progress_bar"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:indeterminate="true" android:paddingRight="10dp"
+				android:visibility="gone"
+				 />
 
-			<TextView android:layout_width="wrap_content"
-				android:layout_height="wrap_content" android:id="@+id/find_chords_message_text_view"
-				android:text="@string/find_chords_intro_message" android:textSize="14sp" />
+			<LinearLayout android:layout_width="0px"
+				android:layout_weight="1.0" android:layout_height="wrap_content">
+				
+				<TextView android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:id="@+id/find_chords_message_text_view"
+					android:text="@string/find_chords_intro_message" android:textSize="14sp" />
+					
+			</LinearLayout>
 
 		</LinearLayout>
 	</LinearLayout>
 
 	<LinearLayout android:layout_width="fill_parent"
-			android:layout_height="wrap_content" android:paddingLeft="10dp"
+		android:layout_height="wrap_content" android:paddingLeft="10dp"
 		android:paddingRight="10dp" android:paddingTop="5dp"
-		android:paddingBottom="5dp">
-		<EditText android:layout_width="fill_parent"
+		android:paddingBottom="5dp" android:orientation="horizontal">
+		<EditText android:layout_width="0px" android:layout_weight="1.0"
 			android:layout_height="wrap_content" android:singleLine="true"
 			android:hint="@string/chord_search_hint" android:id="@+id/find_chords_edit_text"
 			android:imeOptions="actionSearch" />
+		<Button android:layout_width="wrap_content" android:layout_height="wrap_content"
+		android:id="@+id/find_chords_search_button"
+		 android:drawableLeft="@drawable/ic_btn_search" android:visibility="gone"/>
 	</LinearLayout>
 
 	<WebView android:layout_width="fill_parent"
 		android:layout_height="0px" android:layout_weight="1.0"
-		android:id="@+id/find_chords_web_view" 
-		android:background="@android:color/black"/>
+		android:id="@+id/find_chords_web_view" android:visibility="gone"/>
 </LinearLayout>

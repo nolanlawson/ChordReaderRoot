@@ -6,15 +6,12 @@ import java.util.regex.Pattern;
 import android.text.Html;
 import android.text.TextUtils;
 
+import com.nolanlawson.chordfinder.ChordWebpage;
 import com.nolanlawson.chordfinder.util.UtilLogger;
 
 public class WebPageExtractionHelper {
 
 	private static UtilLogger log = new UtilLogger(WebPageExtractionHelper.class);
-	
-	public static enum ChordWebpage {
-		UltimateGuitar;
-	}
 	
     // html tag or html escaped character
     private static Pattern htmlObjectPattern = Pattern.compile(
