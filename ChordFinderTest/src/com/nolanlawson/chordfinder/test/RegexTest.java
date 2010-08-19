@@ -83,6 +83,23 @@ public class RegexTest extends
 		testRegex("Foobar", null);
 	}
 	
+	public void testContainsLineWithChords() {
+		assertFalse(ChordParser.containsLineWithChords(""));
+		assertFalse(ChordParser.containsLineWithChords("Hello world"));
+		assertFalse(ChordParser.containsLineWithChords("Hello my Coney Island baby\nHello my Coney Island gal"));
+		
+		assertTrue(ChordParser.containsLineWithChords("C"));
+		assertTrue(ChordParser.containsLineWithChords("Hello world (C)"));
+		assertTrue(ChordParser.containsLineWithChords("Hello World\nC  F  G  Am"));
+		assertTrue(ChordParser.containsLineWithChords("C F G Am\nHello World"));
+		assertTrue(ChordParser.containsLineWithChords("(F#m) Hello world"));
+		assertTrue(ChordParser.containsLineWithChords("Another Century of Fakers\nIntro: D\nD       A    " +
+				"\nThere are people going hungry every day"));
+		
+	}
+
+	
+	
 	public void testRegex(String chordString, Chord expected) {
 		
 		Chord chord = ChordParser.parseChord(chordString);

@@ -7,6 +7,8 @@ import android.text.Html;
 import android.text.TextUtils;
 
 import com.nolanlawson.chordfinder.ChordWebpage;
+import com.nolanlawson.chordfinder.chords.regex.ChordParser;
+import com.nolanlawson.chordfinder.util.StringUtil;
 import com.nolanlawson.chordfinder.util.UtilLogger;
 
 public class WebPageExtractionHelper {
@@ -31,32 +33,60 @@ public class WebPageExtractionHelper {
     // HTML newline tag, such as '<p>' or '<br/>'
     private static Pattern htmlNewlinePattern = Pattern.compile(
             "<(?:p|br)\\s*+(?:/\\s*+)?>", Pattern.CASE_INSENSITIVE);
-	
-	private static Pattern ultimateGuitarPattern = Pattern.compile("<pre>(.*?)</pre>", 
+    
+	private static Pattern prePattern = Pattern.compile("<pre[^>]*>(.*?)</pre>", 
 				Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+	
+	private static Pattern chordiePattern = Pattern.compile(
+			"<!-- END HEADER -->(.*?)<!-- BOTTOM GRIDS - START -->",
+			Pattern.DOTALL);
+	
+	private static Pattern multipleNewlinePattern = Pattern.compile("([ \t\r]*\n[\t\r ]*){2,}");
 	
 	public static String extractChordChart(ChordWebpage webpage, String html) {
 		
 		Pattern pattern = null;
 		
 		switch (webpage) {
-		case UltimateGuitar:
-			pattern = ultimateGuitarPattern;
+		case Chordie:
+			pattern = chordiePattern;
+			break;
 		}
-		
 		Matcher matcher = pattern.matcher(html);
 		
-		if (!matcher.find()) {
-			return null;
+		if (matcher.find()) {
+			String chordHtml = matcher.group(1);
+			String chordTxt = convertHtmlToText(chordHtml);
+			if (ChordParser.containsLineWithChords(chordTxt)) {
+				return cleanUpText(chordTxt);
+			}
 		}
-		
-		String chordChartHtml = matcher.group(1);
-		
-		return convertHtmlToText(chordChartHtml);
-		
+		return null;
 	}
 	
-	private static String convertHtmlToText(String htmlText) {
+	/**
+	 * Try to find a likely chord chard from the "pre" section of a page
+	 * Returns null if it doesn't find anything likely to be a chord chart
+	 * @param html
+	 * @return
+	 */
+	public static String extractLikelyChordChart(String html) {
+		
+		Matcher matcher = prePattern.matcher(html);
+		
+		while (matcher.find()) {
+			String preHtml = matcher.group(1);
+			String preTxt = convertHtmlToText(preHtml);
+			if (ChordParser.containsLineWithChords(preTxt)) {
+				return cleanUpText(preTxt);
+			}
+		}
+		return null;
+		
+	}
+
+
+	public static String convertHtmlToText(String htmlText) {
 
         StringBuilder plainText = new StringBuilder();
 
@@ -103,5 +133,24 @@ public class WebPageExtractionHelper {
 
         return plainText.toString();
     }
+	
+	private static String cleanUpText(String text) {
+		
+		if (text == null) {
+			return text;
+		}
+		
+		
+		text = text.trim();
+		
+		// get rid of \r
+		text = StringUtil.replace(text, "\r", "");
+		
+		// replace multiple newlines with just two newlines
+		text = multipleNewlinePattern.matcher(text).replaceAll("\n\n");
+		
+		return text;
+		
+	}
 	
 }

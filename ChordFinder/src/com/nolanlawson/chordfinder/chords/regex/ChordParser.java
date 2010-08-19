@@ -1,5 +1,6 @@
 package com.nolanlawson.chordfinder.chords.regex;
 
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -7,13 +8,18 @@ import android.text.TextUtils;
 
 import com.nolanlawson.chordfinder.chords.Chord;
 import com.nolanlawson.chordfinder.chords.ChordAdded;
+import com.nolanlawson.chordfinder.chords.ChordExtended;
 import com.nolanlawson.chordfinder.chords.ChordQuality;
 import com.nolanlawson.chordfinder.chords.ChordRoot;
-import com.nolanlawson.chordfinder.chords.ChordExtended;
 import com.nolanlawson.chordfinder.chords.ChordSuspended;
+import com.nolanlawson.chordfinder.util.StringUtil;
+import com.nolanlawson.chordfinder.util.UtilLogger;
 
 public class ChordParser {
 
+	private static UtilLogger log = new UtilLogger(ChordParser.class);
+	private static Pattern whitespacePattern = Pattern.compile("\\s+");
+	
 	/**
 	 * Attempts to parse a string representation of a chord into a Chord object.  Returns null if it fails to match.
 	 * @param chordString
@@ -21,7 +27,7 @@ public class ChordParser {
 	 */
 	public static Chord parseChord(CharSequence chordString) {
 		
-		Pattern pattern = ChordRegex.getPattern();
+		Pattern pattern = ChordRegex.getChordPattern();
 		Matcher matcher = pattern.matcher(chordString);
 		
 		if (matcher.matches()) {
@@ -65,6 +71,55 @@ public class ChordParser {
 		}
 		
 		return null;
+		
+	}
+	
+	/**
+	 * Return true if it looks like there are "chord lines" in this text -e.g.  C   D  G  C
+	 * @param text
+	 * @return
+	 */
+	public static boolean containsLineWithChords(String text) {
+		
+		if (TextUtils.isEmpty(text == null ? null : text.trim())) {
+			return false;
+		}
+		
+		String[] lines = StringUtil.split(text, "\n");
+		
+		Pattern chordPattern = ChordRegex.getChordPattern();
+		Pattern chordWithParensPattern = ChordRegex.getChordWithParensPattern();
+		
+		for (String line : lines) {
+			
+			line = line.trim();
+			
+			if (TextUtils.isEmpty(line)) {
+				continue;
+			}
+			
+			boolean foundNonChordToken = false;
+			String[] tokens = whitespacePattern.split(line);
+			//log.d("tokens are %s", Arrays.asList(tokens));
+			
+			for (String token : tokens) {
+				if (!chordPattern.matcher(token).matches()) {
+					foundNonChordToken = true;
+				}
+				
+				// if there's a single token like (F#), then assume this is a chord line
+				if (foundNonChordToken && chordWithParensPattern.matcher(token).matches()) {
+					return true;
+				}
+			}
+			
+			if (!foundNonChordToken) {
+				return true;
+			}
+			//log.d("line is %s", line);
+			//log.d("foundNonChordToken is %s", foundNonChordToken);
+		}
+		return false;
 		
 	}
 	

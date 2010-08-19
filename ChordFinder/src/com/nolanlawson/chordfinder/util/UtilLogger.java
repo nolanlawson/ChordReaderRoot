@@ -18,8 +18,8 @@ public class UtilLogger {
 		this.tag = tag;
 	}
 	
-	public UtilLogger(Object object) {
-		this.tag = object.getClass().getCanonicalName();
+	public UtilLogger(Class<?> clazz) {
+		this.tag = clazz.getSimpleName();
 	}
 	
 	public void i(String format, Object... more) {
@@ -51,6 +51,8 @@ public class UtilLogger {
 			for (int i = 0; i < more.length; i++) {
 				if (more[i] instanceof int[]) {
 					more[i] = Arrays.toString((int[])more[i]);
+				} else if (more[i] instanceof String[]) {
+					more[i] = Arrays.toString((String[])more[i]);
 				}
 			}
 			Log.d(tag, String.format(format, more));
@@ -62,6 +64,8 @@ public class UtilLogger {
 			for (int i = 0; i < more.length; i++) {
 				if (more[i] instanceof int[]) {
 					more[i] = Arrays.toString((int[])more[i]);
+				} else if (more[i] instanceof String[]) {
+					more[i] = Arrays.toString((String[])more[i]);
 				}
 			}
 			Log.d(tag, String.format(format, more), e);

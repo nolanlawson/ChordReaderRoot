@@ -15,7 +15,7 @@ import com.nolanlawson.chordfinder.util.ArrayUtil;
 
 public class ChordRegex {
 
-	private static final String REGEX =
+	private static final String CHORD_REGEX =
 		
 			greedyDisjunction(ChordRoot.getAllAliases(), true) + // root note
 			optional(greedyDisjunction(ArrayUtil.concatenate(
@@ -26,16 +26,23 @@ public class ChordRegex {
 			optional("(?:/" + greedyDisjunction(ChordRoot.getAllAliases()) + ")") + // overridden root note ("over")
 			"";
 	
-	private static Pattern pattern = Pattern.compile(REGEX, Pattern.CASE_INSENSITIVE);
+	private static final String CHORD_REGEX_WITH_PARENS = "\\(" + CHORD_REGEX + "\\)";
+	
+	private static Pattern chordPattern = Pattern.compile(CHORD_REGEX, Pattern.CASE_INSENSITIVE);
+	private static Pattern chordWithParensPattern = Pattern.compile(CHORD_REGEX_WITH_PARENS, Pattern.CASE_INSENSITIVE);
 
 	
 	
 	
-	public static Pattern getPattern() {
-		return pattern;
+	public static Pattern getChordPattern() {
+		return chordPattern;
 	}
-
-	public static String optional(String pattern) {
+	
+	public static Pattern getChordWithParensPattern() {
+		return chordWithParensPattern;
+	}
+	
+	private static String optional(String pattern) {
 		return "(" + pattern + "?)";
 	}
 	

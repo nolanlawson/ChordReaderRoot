@@ -28,6 +28,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import com.nolanlawson.chordfinder.chords.regex.ChordParser;
 import com.nolanlawson.chordfinder.helper.WebPageExtractionHelper;
 import com.nolanlawson.chordfinder.util.UtilLogger;
 
@@ -48,6 +49,8 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	private Handler handler = new Handler(Looper.getMainLooper());
 	
 	private ChordWebpage chordWebpage;
+	private String html;
+	private String url;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -90,25 +93,19 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	
     public void showHTML(String html) { 
     	
-		String chordChart = WebPageExtractionHelper.extractChordChart(
-				chordWebpage, html);
-		
-		LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		
-		EditText editText = (EditText) inflater.inflate(R.layout.confirm_chords_edit_text, null);
-		editText.setText(chordChart);
-		
-		new AlertDialog.Builder(FindChordsActivity.this)  
-		             .setTitle(R.string.confirm_chordchart)  
-		             .setView(editText)
-		             .setCancelable(true)
-		             .setNegativeButton(android.R.string.cancel, null)
-		             .setPositiveButton(android.R.string.ok, null)  
-		             .create()  
-		             .show(); 
-		
-		log.d(chordChart);
+    	log.d("html is %s", html);
+    	
+		this.html = html;
 
+		handler.post(new Runnable() {
+			
+			@Override
+			public void run() {
+				urlAndHtmlLoaded();
+				
+			}
+		});
+		
      } 
 
 
@@ -215,36 +212,73 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 
 	public void urlLoaded(String url) {
 		
+		this.url = url;
+		this.chordWebpage = findKnownWebpage(url);
+		
+		handler.post(new Runnable() {
+			
+			@Override
+			public void run() {
+				getHtmlFromWebView();
+				
+			}
+		});
+
+	}
+	
+	private void urlAndHtmlLoaded() {
+		
 		progressBar.setVisibility(View.GONE);
 		infoIconImageView.setVisibility(View.VISIBLE);
 		webView.setVisibility(View.VISIBLE);
 		
-		chordWebpage = findKnownWebpage(url);
+		log.d("chordWebpage is: %s", chordWebpage);
 		
-		if (chordWebpage == null) {
-			analyzeUnknownWebsite(url);		
-		} else {
-			analyzeKnownWebsite(url);
-		}
+		
+		if ((chordWebpage != null && checkHtmlOfKnownWebpage())
+				|| chordWebpage == null && checkHtmlOfUnknownWebpage()) {
+			messageTextView.setText(R.string.chords_found);
+			messageSecondaryView.setEnabled(true);			
 
+		} else {
+			messageTextView.setText(R.string.find_chords_second_message);
+			messageSecondaryView.setEnabled(false);	
+		}
 	}
 	
-	private void analyzeKnownWebsite(String url) {
+	private boolean checkHtmlOfUnknownWebpage() {
 		
-		messageTextView.setText(R.string.chords_found);
-		messageSecondaryView.setEnabled(true);
+		if (url.contains("www.google.com")) {
+			return false; // skip google - we're on the search results page
+		}
+		
+		String txt = WebPageExtractionHelper.convertHtmlToText(html);
+		return ChordParser.containsLineWithChords(txt);
 		
 	}
 
-	private void analyzeUnknownWebsite(String url) {
-		messageTextView.setText(R.string.find_chords_second_message);
-		messageSecondaryView.setEnabled(false);	
+	private boolean checkHtmlOfKnownWebpage() {
 		
+		// check to make sure that, if this is a page from a known website, we can
+		// be sure that there are chords on this page
+		
+		String chordChart = WebPageExtractionHelper.extractChordChart(
+				chordWebpage, html);
+		
+		log.d("chordChart is: %s", chordChart);
+		
+		boolean result = ChordParser.containsLineWithChords(chordChart);
+		
+		log.d("checkHtmlOfKnownWebpage is: %s", result);
+		
+		return result;
+
 	}
 
 	private ChordWebpage findKnownWebpage(String url) {
-		if (url.contains("www.ultimate-guitar.com")) {
-			return ChordWebpage.UltimateGuitar;
+		
+		if (url.contains("www.chordie.com")) {
+			return ChordWebpage.Chordie;
 		}
 		return null;
 	}
@@ -257,11 +291,73 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 			performSearch();
 			break;
 		case R.id.find_chords_message_secondary_view:
-			getHtmlFromWebView();
+			analyzeHtml();
 			break;
 		}
 		
 	}	
+
+	private void analyzeHtml() {
+		
+		if (chordWebpage != null) {
+			analyzeHtmlForKnownWebpage();
+		} else {
+			analyzeHtmlForUnknownWebpage();
+		}
+		
+
+		
+	}
+
+	private void analyzeHtmlForUnknownWebpage() {
+		
+		
+		
+		String chordChart = WebPageExtractionHelper.extractLikelyChordChart(html);
+			
+		if (chordChart == null) { // didn't find a good one
+			chordChart = WebPageExtractionHelper.convertHtmlToText(html);
+		}
+		
+		LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		
+		EditText editText = (EditText) inflater.inflate(R.layout.confirm_chords_edit_text, null);
+		editText.setText(chordChart);
+		
+		new AlertDialog.Builder(FindChordsActivity.this)  
+		             .setTitle(R.string.confirm_chordchart)  
+		             .setView(editText)
+		             .setCancelable(true)
+		             .setNegativeButton(android.R.string.cancel, null)
+		             .setPositiveButton(android.R.string.ok, null)  
+		             .create()  
+		             .show(); 
+		
+		log.d(chordChart);
+		
+	}
+
+	private void analyzeHtmlForKnownWebpage() {
+		String chordChart = WebPageExtractionHelper.extractChordChart(
+				chordWebpage, html);
+		
+		LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		
+		EditText editText = (EditText) inflater.inflate(R.layout.confirm_chords_edit_text, null);
+		editText.setText(chordChart);
+		
+		new AlertDialog.Builder(FindChordsActivity.this)  
+		             .setTitle(R.string.confirm_chordchart)  
+		             .setView(editText)
+		             .setCancelable(true)
+		             .setNegativeButton(android.R.string.cancel, null)
+		             .setPositiveButton(android.R.string.ok, null)  
+		             .create()  
+		             .show(); 
+		
+		log.d(chordChart);
+		
+	}
 
 	@Override
 	public void afterTextChanged(Editable s) {
