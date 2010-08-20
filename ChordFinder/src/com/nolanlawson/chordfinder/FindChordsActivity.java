@@ -2,33 +2,47 @@ package com.nolanlawson.chordfinder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.TextView.OnEditorActionListener;
 
+import com.nolanlawson.chordfinder.adapter.FileAdapter;
 import com.nolanlawson.chordfinder.chords.regex.ChordParser;
+import com.nolanlawson.chordfinder.helper.SaveFileHelper;
 import com.nolanlawson.chordfinder.helper.WebPageExtractionHelper;
 import com.nolanlawson.chordfinder.util.UtilLogger;
 
@@ -36,7 +50,7 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 
 	private static UtilLogger log = new UtilLogger(FindChordsActivity.class);
 	
-	private EditText editText;
+	private EditText searchEditText;
 	private WebView webView;
 	private View messageMainView, messageSecondaryView;
 	private TextView messageTextView;
@@ -49,8 +63,9 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	private Handler handler = new Handler(Looper.getMainLooper());
 	
 	private ChordWebpage chordWebpage;
-	private String html;
-	private String url;
+	private String html = null;
+	private String url = null;
+	private String currentlyOpenFile = null;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,11 +78,42 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
         setUpWidgets();
     }
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.main_menu, menu);
+	    
+	    return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		
+	    switch (item.getItemId()) {
+	    case R.id.menu_about:
+	    	break;
+	    case R.id.menu_manage_files:
+	    	break;
+	    case R.id.menu_open_file:
+	    	showOpenFileDialog();
+	    	break;
+	    	
+	    }
+	    return false;
+	}
+
+
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+
 	private void setUpWidgets() {
 		
-		editText = (EditText) findViewById(R.id.find_chords_edit_text);
-		editText.setOnEditorActionListener(this);
-		editText.addTextChangedListener(this);
+		searchEditText = (EditText) findViewById(R.id.find_chords_edit_text);
+		searchEditText.setOnEditorActionListener(this);
+		searchEditText.addTextChangedListener(this);
 		
 		webView = (WebView) findViewById(R.id.find_chords_web_view);
 		webView.setWebViewClient(client);
@@ -90,6 +136,51 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		messageTextView = (TextView) findViewById(R.id.find_chords_message_text_view);
 		
 	}
+
+	private void showOpenFileDialog() {
+		
+		if (!checkSdCard()) {
+			return;
+		}
+		
+		final List<CharSequence> filenames = new ArrayList<CharSequence>(SaveFileHelper.getSavedFilenames());
+		
+		if (filenames.isEmpty()) {
+			Toast.makeText(this, R.string.no_saved_files, Toast.LENGTH_SHORT).show();
+			return;
+		}
+		
+
+		
+		int fileToSelect = currentlyOpenFile != null ? filenames.indexOf(currentlyOpenFile) : -1;
+		
+		ArrayAdapter<CharSequence> dropdownAdapter = new FileAdapter(
+				this, filenames, fileToSelect, false);
+		
+		Builder builder = new Builder(this);
+		
+		builder.setTitle(R.string.open_file)
+			.setCancelable(true)
+			.setSingleChoiceItems(dropdownAdapter, fileToSelect == -1 ? 0 : fileToSelect, new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.dismiss();
+					String filename = filenames.get(which).toString();
+					openFile(filename);
+					
+				}
+			});
+		
+		builder.show();
+		
+	}	
+	private void openFile(String filename) {
+		
+		//TODO
+		
+	}
+	
 	
     public void showHTML(String html) { 
     	
@@ -132,11 +223,11 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	    } else if (keyCode == KeyEvent.KEYCODE_SEARCH && event.getRepeatCount() == 0) {
 
 	    	InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-	    	editText.requestFocus();
+	    	searchEditText.requestFocus();
 	    	
 	    	// show keyboard
 	    	
-			imm.showSoftInput(editText, 0);	    		
+			imm.showSoftInput(searchEditText, 0);	    		
 	    	
 	    	return true;
 	    	
@@ -163,9 +254,9 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 		// dismiss soft keyboard
 		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-		imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+		imm.hideSoftInputFromWindow(searchEditText.getWindowToken(), 0);
 		
-		CharSequence searchText = editText.getText();
+		CharSequence searchText = searchEditText.getText();
 		
 		if (TextUtils.isEmpty(searchText)) {
 			return;
@@ -319,9 +410,15 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 			chordChart = WebPageExtractionHelper.convertHtmlToText(html);
 		}
 		
+		showSaveChordchartDialog(chordChart);
+		
+	}
+
+	private void showSaveChordchartDialog(String chordChart) {
+		
 		LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		
-		EditText editText = (EditText) inflater.inflate(R.layout.confirm_chords_edit_text, null);
+		final EditText editText = (EditText) inflater.inflate(R.layout.confirm_chords_edit_text, null);
 		editText.setText(chordChart);
 		
 		new AlertDialog.Builder(FindChordsActivity.this)  
@@ -329,7 +426,14 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		             .setView(editText)
 		             .setCancelable(true)
 		             .setNegativeButton(android.R.string.cancel, null)
-		             .setPositiveButton(android.R.string.ok, null)  
+		             .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
+						
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							saveChordChart(editText.getText().toString());
+							
+						}
+					})  
 		             .create()  
 		             .show(); 
 		
@@ -337,25 +441,147 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 	}
 
+	protected void saveChordChart(final String chordChart) {
+		
+		if (!checkSdCard()) {
+			return;
+		}
+		
+		final EditText editText = createEditTextForFilenameSuggestingDialog();
+		
+		DialogInterface.OnClickListener onClickListener = new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+
+				
+				if (isInvalidFilename(editText.getText())) {
+					Toast.makeText(FindChordsActivity.this, R.string.enter_good_filename, Toast.LENGTH_SHORT).show();
+				} else {
+					
+					saveFile(editText.getText().toString(), chordChart);
+				}
+				
+				
+				dialog.dismiss();
+				
+			}
+		};
+		
+		showFilenameSuggestingDialog(editText, onClickListener, R.string.save_file);		
+		
+	}
+	
+	private boolean isInvalidFilename(CharSequence filename) {
+		
+		String filenameAsString = null;
+		
+		return TextUtils.isEmpty(filename)
+				|| (filenameAsString = filename.toString()).contains("/")
+				|| filenameAsString.contains(":")
+				|| filenameAsString.contains(" ")
+				|| !filenameAsString.endsWith(".txt");
+				
+	}	
+
+	private void saveFile(final String filename, final String filetext) {
+		
+		// do in background to avoid jankiness
+		
+		AsyncTask<Void,Void,Boolean> saveTask = new AsyncTask<Void, Void, Boolean>(){
+
+			@Override
+			protected Boolean doInBackground(Void... params) {
+				return SaveFileHelper.saveFile(filetext, filename);
+				
+			}
+
+			@Override
+			protected void onPostExecute(Boolean successfullySavedLog) {
+				
+				super.onPostExecute(successfullySavedLog);
+				
+				if (successfullySavedLog) {
+					Toast.makeText(getApplicationContext(), R.string.file_saved, Toast.LENGTH_SHORT).show();
+				} else {
+					Toast.makeText(getApplicationContext(), R.string.unable_to_save_file, Toast.LENGTH_LONG).show();
+				}
+			}
+			
+			
+		};
+		
+		saveTask.execute((Void)null);
+		
+	}	
+	private EditText createEditTextForFilenameSuggestingDialog() {
+		
+		final EditText editText = new EditText(this);
+		editText.setSingleLine();
+		editText.setSingleLine(true);
+		editText.setInputType(InputType.TYPE_TEXT_VARIATION_FILTER);
+		editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
+		editText.setOnEditorActionListener(new OnEditorActionListener() {
+			
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				
+				if (event != null && event.getAction() == KeyEvent.ACTION_DOWN) {
+					// dismiss soft keyboard
+					InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+					imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+					return true;
+				}
+				
+				
+				return false;
+			}
+		});
+		
+		// create an initial filename to suggest to the user
+		String filename;
+		if (!TextUtils.isEmpty(searchEditText.getText())) {
+			filename = searchEditText.getText().toString().trim().replace(' ', '_') + ".txt";
+		} else {
+			filename = "filename.txt";
+		}
+		editText.setText(filename);
+		
+		// highlight everything but the .txt at the end
+		editText.setSelection(0, filename.length() - 4);
+		
+		return editText;
+	}
+		
+	private void showFilenameSuggestingDialog(EditText editText, 
+			DialogInterface.OnClickListener onClickListener, int titleResId) {
+		
+		Builder builder = new Builder(this);
+		
+		builder.setTitle(titleResId)
+			.setCancelable(true)
+			.setNegativeButton(android.R.string.cancel, null)
+			.setPositiveButton(android.R.string.ok, onClickListener)
+			.setMessage(R.string.enter_filename)
+			.setView(editText);
+		
+		builder.show();
+		
+	}	
+	private boolean checkSdCard() {
+		
+		boolean result = SaveFileHelper.checkIfSdCardExists();
+		
+		if (!result) {
+			Toast.makeText(getApplicationContext(), R.string.sd_card_not_found, Toast.LENGTH_LONG).show();
+		}
+		return result;
+	}
 	private void analyzeHtmlForKnownWebpage() {
 		String chordChart = WebPageExtractionHelper.extractChordChart(
 				chordWebpage, html);
 		
-		LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		
-		EditText editText = (EditText) inflater.inflate(R.layout.confirm_chords_edit_text, null);
-		editText.setText(chordChart);
-		
-		new AlertDialog.Builder(FindChordsActivity.this)  
-		             .setTitle(R.string.confirm_chordchart)  
-		             .setView(editText)
-		             .setCancelable(true)
-		             .setNegativeButton(android.R.string.cancel, null)
-		             .setPositiveButton(android.R.string.ok, null)  
-		             .create()  
-		             .show(); 
-		
-		log.d(chordChart);
+		showSaveChordchartDialog(chordChart);
 		
 	}
 
