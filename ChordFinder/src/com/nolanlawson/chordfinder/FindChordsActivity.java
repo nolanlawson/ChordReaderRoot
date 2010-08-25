@@ -9,10 +9,14 @@ import java.util.List;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -77,6 +81,7 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	private List<ChordInText> chordsInText;
 	
 	private TextView viewingTextView;
+	private BroadcastReceiver receiver;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -90,7 +95,37 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
         
         // initially, search rather than view chords
         switchToSearchingMode();
+        
+        registerClickReceiver();
     }
+    
+    @Override
+    public void onDestroy() {
+    	
+    	super.onDestroy();
+    	unregisterReceiver(receiver);
+    }
+
+	private void registerClickReceiver() {
+		receiver = new BroadcastReceiver() {
+			
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				
+				log.d("data string is %s", intent.getDataString());
+				log.d("id is %s",intent.getData().getLastPathSegment());
+				
+				int id = Integer.parseInt(intent.getData().getLastPathSegment());
+				
+				
+				
+			}
+		};
+		IntentFilter intentFilter = new IntentFilter();
+		intentFilter.addDataScheme(getPackageName());
+		registerReceiver(receiver, intentFilter);
+		
+	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -660,12 +695,21 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		int lastStartIndex = chordText.length();
 		
 		// add a hyperlink to each chord
-		for (ChordInText chordInText : chordsInText) {
+		for (int i = 0; i < chordsInText.size(); i++) {
+			ChordInText chordInText = chordsInText.get(i);
 			
 			stringBuilder.insert(0, htmlEscape(chordText.substring(chordInText.getEndIndex(), lastStartIndex)));
 			
-			stringBuilder.insert(0, 
-					"<a href=\"http://www.google.com\">" + chordInText.getChord().toPrintableString() + "</a>");
+			stringBuilder.insert(0,  "</a>");
+			
+			stringBuilder.insert(0, chordInText.getChord().toPrintableString());
+			
+			// uri to point back to our broadcast receiver
+			int normalIndex = chordsInText.size() - i - 1;
+			Uri uri = Uri.withAppendedPath(Uri.parse(getPackageName() + "://index"), String.valueOf(normalIndex));
+			
+			stringBuilder.insert(0, "<a href=\"" + uri.toString() + "\">");
+	
 			
 			lastStartIndex = chordInText.getStartIndex();
 		}

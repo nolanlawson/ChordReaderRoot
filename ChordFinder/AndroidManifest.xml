@@ -11,6 +11,17 @@
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
+
+			
+		</activity>
+		
+		<activity android:name=".ChordLinkClickedActivity">android:name
+			
+			<intent-filter>
+			    <category android:name="android.intent.category.DEFAULT" />
+			    <action android:name="android.intent.action.VIEW" />
+			    <data android:scheme="com.nolanlawson.chordfinder" />  
+			</intent-filter>
 		</activity>
 
 	</application>

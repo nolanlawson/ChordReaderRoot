@@ -156,10 +156,13 @@ public class ChordParser {
 			if (matcher.find()) { // it's okay for it to just be part of the token in this case
 				// add a sure-fire chord with parens and continue
 				Chord chord = convertMatchedPatternToChord(matcher);
-				ChordInText chordInText = ChordInText.newChordInText(chord, tokenInText.getStartIndex() + matcher.start() + offset, tokenInText.getStartIndex() + matcher.end() + offset);
+				ChordInText chordInText = ChordInText.newChordInText(
+						chord, 
+						tokenInText.getStartIndex() + matcher.start() + offset + 1, // +1 for starting parenthesis 
+						tokenInText.getStartIndex() + matcher.end() + offset - 1 // -1 for ending parenthesis
+						);
 				result.add(chordInText);
 			} else {
-				log.d("didn't find any match for %s", token);
 				// add some candidate chordsInText to the array
 				matcher = chordPattern.matcher(token);
 				if (matcher.matches()) { // must match exactly

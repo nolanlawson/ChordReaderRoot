@@ -14,21 +14,15 @@ public class ChordInText {
 		return chord;
 	}
 	
-	public void setChord(Chord chord) {
-		this.chord = chord;
-	}
+
 	public int getStartIndex() {
 		return startIndex;
 	}
-	public void setStartIndex(int startIndex) {
-		this.startIndex = startIndex;
-	}
+
 	public int getEndIndex() {
 		return endIndex;
 	}
-	public void setEndIndex(int endIndex) {
-		this.endIndex = endIndex;
-	}
+	
 	
 	public static ChordInText newChordInText(Chord chord, int startIndex, int endIndex) {
 		
