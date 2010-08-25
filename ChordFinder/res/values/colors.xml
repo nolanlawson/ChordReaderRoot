@@ -1,6 +1,7 @@
 <resources>
 
 	<color name="darkGray">#FF333333</color>
+	<color name="linkColorBlue">#0099dd</color>
 
 	
 </resources>

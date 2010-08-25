@@ -10,6 +10,7 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -65,7 +66,6 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	private ChordWebpage chordWebpage;
 	private String html = null;
 	private String url = null;
-	private String currentlyOpenFile = null;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -150,18 +150,14 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 			return;
 		}
 		
-
-		
-		int fileToSelect = currentlyOpenFile != null ? filenames.indexOf(currentlyOpenFile) : -1;
-		
 		ArrayAdapter<CharSequence> dropdownAdapter = new FileAdapter(
-				this, filenames, fileToSelect, false);
+				this, filenames, -1, false);
 		
 		Builder builder = new Builder(this);
 		
 		builder.setTitle(R.string.open_file)
 			.setCancelable(true)
-			.setSingleChoiceItems(dropdownAdapter, fileToSelect == -1 ? 0 : fileToSelect, new DialogInterface.OnClickListener() {
+			.setSingleChoiceItems(dropdownAdapter, -1, new DialogInterface.OnClickListener() {
 				
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
@@ -175,10 +171,13 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		builder.show();
 		
 	}	
+	
 	private void openFile(String filename) {
 		
-		//TODO
+		Intent intent = new Intent(this, ViewChordsActivity.class);
+		intent.putExtra(ViewChordsActivity.EXTRA_FILENAME, filename);
 		
+		startActivity(intent);
 	}
 	
 	
