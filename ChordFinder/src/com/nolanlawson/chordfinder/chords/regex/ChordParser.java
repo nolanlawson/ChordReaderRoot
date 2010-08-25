@@ -99,6 +99,7 @@ public class ChordParser {
 				return true;
 			}
 		}
+		log.d("found no lines containing chords in text");
 		return false;
 		
 	}
@@ -148,18 +149,20 @@ public class ChordParser {
 		Pattern chordWithParensPattern = ChordRegex.getChordWithParensPattern();
 		
 		for (int i = 0; i < tokens.length; i++) {
+			
 			TokenInText tokenInText = tokens[i];
 			String token = tokenInText.getToken();
 			Matcher matcher = chordWithParensPattern.matcher(token);
-			if (matcher.matches()) {
-				// add a sure-fire chord and continue
+			if (matcher.find()) { // it's okay for it to just be part of the token in this case
+				// add a sure-fire chord with parens and continue
 				Chord chord = convertMatchedPatternToChord(matcher);
-				ChordInText chordInText = ChordInText.newChordInText(chord, tokenInText.getStartIndex() + offset, tokenInText.getEndIndex() + offset);
+				ChordInText chordInText = ChordInText.newChordInText(chord, tokenInText.getStartIndex() + matcher.start() + offset, tokenInText.getStartIndex() + matcher.end() + offset);
 				result.add(chordInText);
 			} else {
+				log.d("didn't find any match for %s", token);
 				// add some candidate chordsInText to the array
 				matcher = chordPattern.matcher(token);
-				if (matcher.matches()) {
+				if (matcher.matches()) { // must match exactly
 					Chord chord = convertMatchedPatternToChord(matcher);
 					ChordInText chordInText = ChordInText.newChordInText(chord, tokenInText.getStartIndex() + offset, tokenInText.getEndIndex() + offset);
 					

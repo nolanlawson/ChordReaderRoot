@@ -118,7 +118,7 @@ public class WebPageExtractionHelper {
                     replacementString = "\n";
                 }
             } else { // html tag or <style>/<script> span
-                replacementString = " ";
+                replacementString = "";
             }
 
             plainText.append(htmlText.substring(searchIndex, start));

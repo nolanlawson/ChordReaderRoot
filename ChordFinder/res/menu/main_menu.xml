@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+
+	<item android:id="@+id/menu_search_chords" android:title="@string/search_for_chords"
+		android:alphabeticShortcut="@string/search_for_chords" android:icon="@drawable/ic_menu_search" />
+
+	<item android:id="@+id/menu_save_chords" android:title="@string/save_chords"
+		android:alphabeticShortcut="@string/save_chords" android:icon="@drawable/ic_menu_save" />
+
 		
 	<item android:id="@+id/menu_open_file" android:title="@string/open_file"
 		android:alphabeticShortcut="@string/open_file" android:icon="@drawable/ic_menu_set_as" />

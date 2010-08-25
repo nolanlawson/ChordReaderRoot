@@ -3,6 +3,7 @@ package com.nolanlawson.chordfinder;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import android.app.Activity;
@@ -10,16 +11,18 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
+import android.text.Html;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -42,9 +45,11 @@ import android.widget.Toast;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.nolanlawson.chordfinder.adapter.FileAdapter;
+import com.nolanlawson.chordfinder.chords.regex.ChordInText;
 import com.nolanlawson.chordfinder.chords.regex.ChordParser;
 import com.nolanlawson.chordfinder.helper.SaveFileHelper;
 import com.nolanlawson.chordfinder.helper.WebPageExtractionHelper;
+import com.nolanlawson.chordfinder.util.StringUtil;
 import com.nolanlawson.chordfinder.util.UtilLogger;
 
 public class FindChordsActivity extends Activity implements OnEditorActionListener, OnClickListener, TextWatcher {
@@ -53,7 +58,7 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	
 	private EditText searchEditText;
 	private WebView webView;
-	private View messageMainView, messageSecondaryView;
+	private View messageMainView, messageSecondaryView, searchingView;
 	private TextView messageTextView;
 	private ProgressBar progressBar;
 	private ImageView infoIconImageView;
@@ -67,6 +72,12 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	private String html = null;
 	private String url = null;
 	
+	private String filename;
+	private String chordText;
+	private List<ChordInText> chordsInText;
+	
+	private TextView viewingTextView;
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,6 +87,9 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
         setContentView(R.layout.find_chords);
         
         setUpWidgets();
+        
+        // initially, search rather than view chords
+        switchToSearchingMode();
     }
 
 	@Override
@@ -94,9 +108,14 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	    	break;
 	    case R.id.menu_manage_files:
 	    	break;
+	    case R.id.menu_search_chords:
+	    	switchToSearchingMode();
+	    	break;
 	    case R.id.menu_open_file:
 	    	showOpenFileDialog();
 	    	break;
+	    case R.id.menu_save_chords:
+	    	showSaveChordchartDialog();
 	    	
 	    }
 	    return false;
@@ -105,6 +124,22 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
+		
+		MenuItem searchChordsMenuItem = menu.findItem(R.id.menu_search_chords);
+		
+		boolean searchMode = searchingView.getVisibility() == View.VISIBLE;
+		
+		// if we're already in search mode, no need to show this menu item
+		searchChordsMenuItem.setVisible(!searchMode);
+		searchChordsMenuItem.setEnabled(!searchMode);
+		
+		// if we're not in viewing mode, there's no need to show the 'save chords' menu item
+		
+		MenuItem saveChordsMenuItem = menu.findItem(R.id.menu_save_chords);
+		
+		saveChordsMenuItem.setVisible(!searchMode);
+		saveChordsMenuItem.setEnabled(!searchMode);
+		
 		return super.onPrepareOptionsMenu(menu);
 	}
 
@@ -134,6 +169,10 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		messageSecondaryView.setOnClickListener(this);
 		
 		messageTextView = (TextView) findViewById(R.id.find_chords_message_text_view);
+		
+		viewingTextView = (TextView) findViewById(R.id.find_chords_viewing_text_view);
+		
+		searchingView = findViewById(R.id.find_chords_finding_view);
 		
 	}
 
@@ -172,12 +211,13 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 	}	
 	
-	private void openFile(String filename) {
+	private void openFile(String filenameToOpen) {
 		
-		Intent intent = new Intent(this, ViewChordsActivity.class);
-		intent.putExtra(ViewChordsActivity.EXTRA_FILENAME, filename);
+		filename = filenameToOpen;
 		
-		startActivity(intent);
+		chordText = SaveFileHelper.openFile(filename);
+		
+		switchToViewingMode();
 	}
 	
 	
@@ -390,63 +430,72 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	private void analyzeHtml() {
 		
 		if (chordWebpage != null) {
-			analyzeHtmlForKnownWebpage();
-		} else {
-			analyzeHtmlForUnknownWebpage();
-		}
-		
-
-		
-	}
-
-	private void analyzeHtmlForUnknownWebpage() {
-		
-		
-		
-		String chordChart = WebPageExtractionHelper.extractLikelyChordChart(html);
+			// known webpage
 			
-		if (chordChart == null) { // didn't find a good one
-			chordChart = WebPageExtractionHelper.convertHtmlToText(html);
+			log.d("known web page: %s", chordWebpage);
+			
+			chordText = WebPageExtractionHelper.extractChordChart(
+					chordWebpage, html);
+		} else {
+			// unknown webpage
+			
+			log.d("unknown webpage");
+			
+			chordText = WebPageExtractionHelper.extractLikelyChordChart(html);
+			
+			
+			if (chordText == null) { // didn't find a good extraction, so use the entire html
+
+				log.d("didn't find a good chord chart using the <pre> tag");
+				
+				chordText = WebPageExtractionHelper.convertHtmlToText(html);
+			}
 		}
 		
-		showSaveChordchartDialog(chordChart);
+		showConfirmChordchartDialog();
 		
 	}
 
-	private void showSaveChordchartDialog(String chordChart) {
+	private void showConfirmChordchartDialog() {
 		
 		LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		
 		final EditText editText = (EditText) inflater.inflate(R.layout.confirm_chords_edit_text, null);
-		editText.setText(chordChart);
+		editText.setText(chordText);
 		
 		new AlertDialog.Builder(FindChordsActivity.this)  
 		             .setTitle(R.string.confirm_chordchart)  
 		             .setView(editText)
 		             .setCancelable(true)
 		             .setNegativeButton(android.R.string.cancel, null)
-		             .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
+		             .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 						
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
-							saveChordChart(editText.getText().toString());
+							chordText = editText.getText().toString();
+							switchToViewingMode();
 							
 						}
 					})  
 		             .create()  
 		             .show(); 
 		
-		log.d(chordChart);
+		//log.d(chordText);
 		
 	}
 
-	protected void saveChordChart(final String chordChart) {
+	protected void showSaveChordchartDialog() {
 		
 		if (!checkSdCard()) {
 			return;
 		}
 		
 		final EditText editText = createEditTextForFilenameSuggestingDialog();
+		
+		if (filename != null) {
+			//just suggest the same filename as before
+			editText.setText(filename);
+		}
 		
 		DialogInterface.OnClickListener onClickListener = new DialogInterface.OnClickListener() {
 			
@@ -458,7 +507,7 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 					Toast.makeText(FindChordsActivity.this, R.string.enter_good_filename, Toast.LENGTH_SHORT).show();
 				} else {
 					
-					saveFile(editText.getText().toString(), chordChart);
+					saveFile(editText.getText().toString(), chordText);
 				}
 				
 				
@@ -576,13 +625,6 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		}
 		return result;
 	}
-	private void analyzeHtmlForKnownWebpage() {
-		String chordChart = WebPageExtractionHelper.extractChordChart(
-				chordWebpage, html);
-		
-		showSaveChordchartDialog(chordChart);
-		
-	}
 
 	@Override
 	public void afterTextChanged(Editable s) {
@@ -602,6 +644,75 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		// do nothing
 		
 	}	
+	
+
+	private void analyzeChords() {
+	
+		chordsInText = ChordParser.findChordsInText(chordText);
+		
+		log.d("found %d chords", chordsInText.size());
+		
+		// walk backwards through each chord from finish to start
+		Collections.sort(chordsInText, Collections.reverseOrder(ChordInText.sortByStartIndex()));
+		
+		StringBuilder stringBuilder = new StringBuilder();
+		
+		int lastStartIndex = chordText.length();
+		
+		// add a hyperlink to each chord
+		for (ChordInText chordInText : chordsInText) {
+			
+			stringBuilder.insert(0, htmlEscape(chordText.substring(chordInText.getEndIndex(), lastStartIndex)));
+			
+			stringBuilder.insert(0, 
+					"<a href=\"http://www.google.com\">" + chordInText.getChord().toPrintableString() + "</a>");
+			
+			lastStartIndex = chordInText.getStartIndex();
+		}
+		
+		
+		
+		// insert the beginning of the text last
+		stringBuilder.insert(0, htmlEscape(chordText.substring(0, lastStartIndex)));
+
+		viewingTextView.setText(Html.fromHtml(stringBuilder.toString()));
+		viewingTextView.setLinkTextColor(ColorStateList.valueOf(getResources().getColor(R.color.linkColorBlue)));
+		
+		
+	}
+
+
+
+	private Object htmlEscape(String str) {
+		return StringUtil.replace(StringUtil.replace(TextUtils.htmlEncode(str), "\n", "<br/>")," ","&nbsp;");
+	}
+
+
+
+	private void switchToViewingMode() {
+		
+		searchingView.setVisibility(View.GONE);
+		viewingTextView.setVisibility(View.VISIBLE);
+		
+		viewingTextView.setMovementMethod(LinkMovementMethod.getInstance());
+		viewingTextView.setText(chordText);
+		
+		analyzeChords();
+		
+		
+	}
+	
+	private void switchToSearchingMode() {
+		
+		chordText = null;
+		filename = null;
+		chordsInText = null;
+		searchEditText.setText(null);
+		
+		searchingView.setVisibility(View.VISIBLE);
+		viewingTextView.setVisibility(View.GONE);
+	}
+
 	private class CustomWebViewClient extends WebViewClient {
 
 		@Override
