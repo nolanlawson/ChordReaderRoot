@@ -62,6 +62,7 @@ import com.nolanlawson.chordfinder.util.UtilLogger;
 
 public class FindChordsActivity extends Activity implements OnEditorActionListener, OnClickListener, TextWatcher {
 
+	private static final int PROGRESS_DIALOG_MIN_TIME = 600;
 	
 	private static UtilLogger log = new UtilLogger(FindChordsActivity.class);
 	
@@ -318,6 +319,9 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 
 			@Override
 			protected String doInBackground(Void... params) {
+				
+				long start = System.currentTimeMillis();
+				
 				for (ChordInText chordInText : chordsInText) {
 					
 					chordInText.setChord(TransposeHelper.transposeChord(
@@ -328,6 +332,20 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 				transposeHalfSteps = newTransposeHalfSteps;
 				
 				String chordText = buildUpChordTextToDisplay();
+				
+
+				long elapsed = System.currentTimeMillis() - start;
+				
+				if (elapsed < PROGRESS_DIALOG_MIN_TIME) {
+					// show progressdialog for at least 1 second, or else it goes by too fast
+					// XXX: this is a weird UI hack, but I don't know what else to do
+					try {
+						Thread.sleep(PROGRESS_DIALOG_MIN_TIME - elapsed);
+					} catch (InterruptedException e) {
+						log.e(e,"unexpected exception");
+					}
+				}
+				
 				
 				return chordText;
 				
@@ -979,7 +997,21 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 
 			@Override
 			protected String doInBackground(Void... params) {
+				
+				long start = System.currentTimeMillis();
 				String newText = buildUpChordTextToDisplay();
+				
+				long elapsed = System.currentTimeMillis() - start;
+				
+				if (elapsed < PROGRESS_DIALOG_MIN_TIME) {
+					// show progressdialog for at least 1 second, or else it goes by too fast
+					// XXX: this is a weird UI hack, but I don't know what else to do
+					try {
+						Thread.sleep(PROGRESS_DIALOG_MIN_TIME - elapsed);
+					} catch (InterruptedException e) {
+						log.e(e,"unexpected exception");
+					}
+				}
 				return newText;
 			}
 
