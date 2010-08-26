@@ -724,7 +724,7 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 						
 							
 					} else {
-						
+						saveFile(editText.getText().toString(), chordText);
 					}
 					
 					
@@ -933,6 +933,8 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 
 	private void switchToViewingMode() {
 		
+		resetDataExceptChordTextAndFilename();
+		
 		searchingView.setVisibility(View.GONE);
 		viewingTextView.setVisibility(View.VISIBLE);
 		
@@ -956,13 +958,19 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 		chordText = null;
 		filename = null;
+		resetDataExceptChordTextAndFilename();
+		
+	}
+	
+	private void resetDataExceptChordTextAndFilename() {
+		
+
 		chordsInText = null;
-		searchEditText.setText(null);
 		capoFret = 0;
 		transposeHalfSteps = 0;
 		
 	}
-
+	
 	private class CustomWebViewClient extends WebViewClient {
 
 		@Override
