@@ -53,6 +53,7 @@ import com.nolanlawson.chordfinder.chords.regex.ChordInText;
 import com.nolanlawson.chordfinder.chords.regex.ChordParser;
 import com.nolanlawson.chordfinder.helper.DialogHelper;
 import com.nolanlawson.chordfinder.helper.SaveFileHelper;
+import com.nolanlawson.chordfinder.helper.TransposeHelper;
 import com.nolanlawson.chordfinder.helper.WebPageExtractionHelper;
 import com.nolanlawson.chordfinder.util.StringUtil;
 import com.nolanlawson.chordfinder.util.UtilLogger;
@@ -245,8 +246,13 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 					View transposeView = view.findViewById(R.id.transpose_include);
 					View capoView = view.findViewById(R.id.capo_include);
 					
-					transposeHalfSteps = DialogHelper.getSeekBarValue(transposeView) + DialogHelper.TRANSPOSE_MIN;
-					capoFret = DialogHelper.getSeekBarValue(capoView) + DialogHelper.CAPO_MIN;
+					int newTransposeHalfSteps = DialogHelper.getSeekBarValue(transposeView) + DialogHelper.TRANSPOSE_MIN;
+					int newCapoFret = DialogHelper.getSeekBarValue(capoView) + DialogHelper.CAPO_MIN;
+					
+					log.d("transposeHalfSteps is now %d", newTransposeHalfSteps);
+					log.d("capoFret is now %d", newCapoFret);
+					
+					changeTransposeOrCapo(newTransposeHalfSteps, newCapoFret);
 					
 					dialog.dismiss();
 					
@@ -257,6 +263,20 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 	}
 	
+	protected void changeTransposeOrCapo(int newTransposeHalfSteps, int newCapoFret) {
+		
+		for (ChordInText chordInText : chordsInText) {
+			
+			chordInText.setChord(TransposeHelper.transposeChord(
+					chordInText.getChord(), capoFret - newCapoFret, transposeHalfSteps - newTransposeHalfSteps));
+		}
+		capoFret = newCapoFret;
+		transposeHalfSteps = newTransposeHalfSteps;
+		
+		applyChordsInTextToText();
+		
+	}
+
 	private void startDeleteSavedFilesDialog() {
 		
 		if (!checkSdCard()) {
@@ -861,7 +881,15 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 		// walk backwards through each chord from finish to start
 		Collections.sort(chordsInText, Collections.reverseOrder(ChordInText.sortByStartIndex()));
+				
+		applyChordsInTextToText();
 		
+	}
+
+
+
+	private void applyChordsInTextToText() {
+
 		StringBuilder stringBuilder = new StringBuilder();
 		
 		int lastStartIndex = chordText.length();
@@ -893,11 +921,9 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 
 		viewingTextView.setText(Html.fromHtml(stringBuilder.toString()));
 		viewingTextView.setLinkTextColor(ColorStateList.valueOf(getResources().getColor(R.color.linkColorBlue)));
-		
+
 		
 	}
-
-
 
 	private Object htmlEscape(String str) {
 		return StringUtil.replace(StringUtil.replace(TextUtils.htmlEncode(str), "\n", "<br/>")," ","&nbsp;");

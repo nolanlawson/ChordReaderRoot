@@ -7,13 +7,13 @@
 
 
 
-	<TextView android:text="@string/transpose_title"
+	<TextView android:text="@string/transpose_title" android:textStyle="bold"
 		android:textSize="16sp" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" />
 
 	<include android:id="@+id/transpose_include" layout="@layout/enhanced_seek_bar" />
 
-	<TextView android:text="@string/capo_title"
+	<TextView android:text="@string/capo_title" android:textStyle="bold"
 		android:textSize="16sp" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" />
 

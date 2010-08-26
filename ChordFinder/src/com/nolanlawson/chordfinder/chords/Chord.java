@@ -1,6 +1,6 @@
 package com.nolanlawson.chordfinder.chords;
 
-public class Chord {
+public class Chord implements Cloneable {
 
 	private ChordRoot root;
 	private ChordQuality quality;
@@ -47,6 +47,22 @@ public class Chord {
 	}
 	public void setOverridingRoot(ChordRoot overridingRoot) {
 		this.overridingRoot = overridingRoot;
+	}
+	
+	@Override
+	public Object clone() {
+			
+		Chord clonedChord = new Chord();
+		
+		clonedChord.root = this.root;
+		clonedChord.quality = this.quality;
+		clonedChord.seventh = this.seventh;
+		clonedChord.added = this.added;
+		clonedChord.suspended = this.suspended;
+		clonedChord.overridingRoot = this.overridingRoot;
+		
+		return clonedChord;
+				
 	}
 	
 	public static Chord newChord(ChordRoot root, ChordQuality quality, ChordExtended seventh,

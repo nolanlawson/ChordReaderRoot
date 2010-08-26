@@ -203,7 +203,7 @@ public class ChordParser {
 					continue;
 				}
 				
-				if (candidateChordsInText.length == 1) { // also likely to be a chord, if it's the only one
+				if (tokens.length == 1) { // also likely to be a chord, if it's the only token in the line
 					result.add(candidateChordInText);
 					continue;
 				}

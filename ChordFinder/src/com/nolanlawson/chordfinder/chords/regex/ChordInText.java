@@ -15,6 +15,11 @@ public class ChordInText {
 	}
 	
 
+	public void setChord(Chord chord) {
+		this.chord = chord;
+	}
+
+
 	public int getStartIndex() {
 		return startIndex;
 	}
