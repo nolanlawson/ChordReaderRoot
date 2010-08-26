@@ -32,4 +32,10 @@
     <string name="files_deleted">%d file(s) deleted.</string>
     <string name="capo_title">Capo on Fret:</string>
     <string name="transpose_title">Transpose (half-steps):</string>
+    <string name="refresh">Refresh</string>
+    <string name="stop">Stop</string>
+    <string name="stopping">Stopping...</string>
+    <string name="transposing">Transposing</string>
+    <string name="please_wait">Please wait...</string>
+    <string name="loading_title">Loading</string>
 </resources>

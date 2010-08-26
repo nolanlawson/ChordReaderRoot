@@ -12,6 +12,12 @@
 	<item android:id="@+id/menu_save_chords" android:title="@string/save_chords"
 		android:alphabeticShortcut="@string/save_chords" android:icon="@drawable/ic_menu_save" />
 
+	<item android:id="@+id/menu_refresh" android:title="@string/refresh"
+		android:alphabeticShortcut="@string/refresh" android:icon="@drawable/ic_menu_refresh" />
+
+	<item android:id="@+id/menu_stop" android:title="@string/stop"
+		android:alphabeticShortcut="@string/stop" android:icon="@drawable/ic_menu_stop" />
+
 		
 	<item android:id="@+id/menu_open_file" android:title="@string/open_file"
 		android:alphabeticShortcut="@string/open_file" android:icon="@drawable/ic_menu_set_as" />

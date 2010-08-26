@@ -8,6 +8,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.app.AlertDialog.Builder;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -48,6 +49,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.TextView.OnEditorActionListener;
 
+import com.nolanlawson.chordfinder.R.id;
 import com.nolanlawson.chordfinder.adapter.FileAdapter;
 import com.nolanlawson.chordfinder.chords.regex.ChordInText;
 import com.nolanlawson.chordfinder.chords.regex.ChordParser;
@@ -161,6 +163,12 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	    case R.id.menu_transpose:
 	    	createTransposeDialog();
 	    	break;
+	    case R.id.menu_stop:
+	    	stopWebView();
+	    	break;
+	    case R.id.menu_refresh:
+	    	refreshWebView();
+	    	break;
 	    	
 	    }
 	    return false;
@@ -191,6 +199,20 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 		transposeMenuItem.setVisible(!searchMode);
 		transposeMenuItem.setEnabled(!searchMode);
+		
+		// stop and refresh only apply to searching mode
+		
+		MenuItem stopMenuItem = menu.findItem(R.id.menu_stop);
+		MenuItem refreshMenuItem = menu.findItem(R.id.menu_refresh);
+		
+		boolean webViewVisible = webView.getVisibility() == View.VISIBLE;
+		boolean pageLoading = progressBar.getVisibility() == View.VISIBLE; // page still loading
+			
+		stopMenuItem.setEnabled(searchMode && pageLoading);
+		stopMenuItem.setVisible(searchMode && pageLoading);
+		
+		refreshMenuItem.setEnabled(searchMode && webViewVisible && !pageLoading);
+		refreshMenuItem.setVisible(searchMode && webViewVisible && !pageLoading);
 		
 		return super.onPrepareOptionsMenu(menu);
 	}
@@ -229,6 +251,19 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	}
 
 
+
+	private void refreshWebView() {
+		webView.reload();
+		
+	}
+
+	private void stopWebView() {
+		
+		Toast.makeText(this, R.string.stopping, Toast.LENGTH_SHORT).show();
+		webView.stopLoading();
+		
+	}
+	
 	private void createTransposeDialog() {
 		
 		final View view = DialogHelper.createTransposeDialogView(this, capoFret, transposeHalfSteps);
@@ -263,17 +298,54 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 	}
 	
-	protected void changeTransposeOrCapo(int newTransposeHalfSteps, int newCapoFret) {
+	protected void changeTransposeOrCapo(final int newTransposeHalfSteps, final int newCapoFret) {
 		
-		for (ChordInText chordInText : chordsInText) {
+		final ProgressDialog progressDialog = new ProgressDialog(this);
+		progressDialog.setTitle(R.string.transposing);
+		progressDialog.setMessage(getText(R.string.please_wait));
+		progressDialog.setIndeterminate(true);
+		
+		// transpose in background to avoid jankiness
+		AsyncTask<Void,Void,String> task = new AsyncTask<Void, Void, String>(){
 			
-			chordInText.setChord(TransposeHelper.transposeChord(
-					chordInText.getChord(), capoFret - newCapoFret, transposeHalfSteps - newTransposeHalfSteps));
-		}
-		capoFret = newCapoFret;
-		transposeHalfSteps = newTransposeHalfSteps;
+			
+			
+			@Override
+			protected void onPreExecute() {
+				super.onPreExecute();
+				progressDialog.show();
+			}
+
+			@Override
+			protected String doInBackground(Void... params) {
+				for (ChordInText chordInText : chordsInText) {
+					
+					chordInText.setChord(TransposeHelper.transposeChord(
+							chordInText.getChord(), capoFret - newCapoFret, transposeHalfSteps - newTransposeHalfSteps));
+				}
+
+				capoFret = newCapoFret;
+				transposeHalfSteps = newTransposeHalfSteps;
+				
+				String chordText = buildUpChordTextToDisplay();
+				
+				return chordText;
+				
+			}
+
+			@Override
+			protected void onPostExecute(String chordText) {
+				super.onPostExecute(chordText);
+				
+				applyLinkifiedChordsTextToTextView(chordText);
+				progressDialog.dismiss();
+			}
+			
+			
+		};
 		
-		applyChordsInTextToText();
+		task.execute((Void)null);
+
 		
 	}
 
@@ -873,7 +945,7 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	}	
 	
 
-	private void analyzeChords() {
+	private void analyzeChordsAndShowInitialChordView() {
 	
 		chordsInText = ChordParser.findChordsInText(chordText);
 		
@@ -881,15 +953,61 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 		// walk backwards through each chord from finish to start
 		Collections.sort(chordsInText, Collections.reverseOrder(ChordInText.sortByStartIndex()));
-				
-		applyChordsInTextToText();
+		
+		showInitialChordView();
 		
 	}
 
 
 
-	private void applyChordsInTextToText() {
+	private void showInitialChordView() {
+		
+		// do in the background to avoid jankiness
+		
+		final ProgressDialog progressDialog = new ProgressDialog(this);
+		progressDialog.setTitle(R.string.loading_title);
+		progressDialog.setMessage(getText(R.string.please_wait));
+		progressDialog.setIndeterminate(true);
+		
+		AsyncTask<Void,Void,String> task = new AsyncTask<Void, Void, String>(){
 
+			@Override
+			protected void onPreExecute() {
+				super.onPreExecute();
+				progressDialog.show();
+			}
+
+			@Override
+			protected String doInBackground(Void... params) {
+				String newText = buildUpChordTextToDisplay();
+				return newText;
+			}
+
+			@Override
+			protected void onPostExecute(String newText) {
+				super.onPostExecute(newText);
+				
+				applyLinkifiedChordsTextToTextView(newText);
+				
+				progressDialog.dismiss();
+				
+			}
+			
+		};
+		
+		task.execute((Void)null);
+			
+		
+	}
+
+	private void applyLinkifiedChordsTextToTextView(String newText) {
+		
+		viewingTextView.setText(Html.fromHtml(newText));
+		viewingTextView.setLinkTextColor(ColorStateList.valueOf(getResources().getColor(R.color.linkColorBlue)));
+		
+	}
+
+	private String buildUpChordTextToDisplay() {
 		StringBuilder stringBuilder = new StringBuilder();
 		
 		int lastStartIndex = chordText.length();
@@ -919,10 +1037,7 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		// insert the beginning of the text last
 		stringBuilder.insert(0, htmlEscape(chordText.substring(0, lastStartIndex)));
 
-		viewingTextView.setText(Html.fromHtml(stringBuilder.toString()));
-		viewingTextView.setLinkTextColor(ColorStateList.valueOf(getResources().getColor(R.color.linkColorBlue)));
-
-		
+		return stringBuilder.toString();
 	}
 
 	private Object htmlEscape(String str) {
@@ -941,7 +1056,7 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		viewingTextView.setMovementMethod(LinkMovementMethod.getInstance());
 		viewingTextView.setText(chordText);
 		
-		analyzeChords();
+		analyzeChordsAndShowInitialChordView();
 		
 		
 	}
