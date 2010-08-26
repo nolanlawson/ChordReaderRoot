@@ -1,6 +1,7 @@
 package com.nolanlawson.chordfinder.chords.regex;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -20,8 +21,8 @@ import com.nolanlawson.chordfinder.util.UtilLogger;
 public class ChordParser {
 
 	private static UtilLogger log = new UtilLogger(ChordParser.class);
-	private static Pattern whitespacePattern = Pattern.compile("\\s+");
 	private static Pattern nonWhitespacePattern = Pattern.compile("\\S+");
+	private static List<String> commonWordsThatResembleChords = Arrays.asList("a","am");
 	
 	/**
 	 * Attempts to parse a string representation of a chord into a Chord object.  Returns null if it fails to match.
@@ -192,8 +193,12 @@ public class ChordParser {
 					continue;
 				}
 				
-				if (candidateChordInText.getEndIndex() - candidateChordInText.getStartIndex() > 3) {
-					// very likely to be a chord, if the length of the token is >3
+				String candidateChordString = line.substring(
+						candidateChordInText.getStartIndex() - offset, 
+						candidateChordInText.getEndIndex() - offset);
+				
+				// very likely to be a chord
+				if (!commonWordsThatResembleChords.contains(candidateChordString.toLowerCase())) {
 					result.add(candidateChordInText);
 					continue;
 				}

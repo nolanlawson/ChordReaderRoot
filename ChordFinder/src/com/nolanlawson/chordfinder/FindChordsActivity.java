@@ -51,6 +51,7 @@ import android.widget.TextView.OnEditorActionListener;
 import com.nolanlawson.chordfinder.adapter.FileAdapter;
 import com.nolanlawson.chordfinder.chords.regex.ChordInText;
 import com.nolanlawson.chordfinder.chords.regex.ChordParser;
+import com.nolanlawson.chordfinder.helper.DialogHelper;
 import com.nolanlawson.chordfinder.helper.SaveFileHelper;
 import com.nolanlawson.chordfinder.helper.WebPageExtractionHelper;
 import com.nolanlawson.chordfinder.util.StringUtil;
@@ -58,6 +59,7 @@ import com.nolanlawson.chordfinder.util.UtilLogger;
 
 public class FindChordsActivity extends Activity implements OnEditorActionListener, OnClickListener, TextWatcher {
 
+	
 	private static UtilLogger log = new UtilLogger(FindChordsActivity.class);
 	
 	private EditText searchEditText;
@@ -79,6 +81,8 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	private String filename;
 	private String chordText;
 	private List<ChordInText> chordsInText;
+	private int capoFret = 0;
+	private int transposeHalfSteps = 0;
 	
 	private TextView viewingTextView;
 	private BroadcastReceiver receiver;
@@ -142,6 +146,7 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	    case R.id.menu_about:
 	    	break;
 	    case R.id.menu_manage_files:
+	    	startDeleteSavedFilesDialog();
 	    	break;
 	    case R.id.menu_search_chords:
 	    	switchToSearchingMode();
@@ -151,6 +156,10 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	    	break;
 	    case R.id.menu_save_chords:
 	    	showSaveChordchartDialog();
+	    	break;
+	    case R.id.menu_transpose:
+	    	createTransposeDialog();
+	    	break;
 	    	
 	    }
 	    return false;
@@ -174,6 +183,13 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 		saveChordsMenuItem.setVisible(!searchMode);
 		saveChordsMenuItem.setEnabled(!searchMode);
+		
+		// only show transpose in viewing mode
+		
+		MenuItem transposeMenuItem = menu.findItem(R.id.menu_transpose);
+		
+		transposeMenuItem.setVisible(!searchMode);
+		transposeMenuItem.setEnabled(!searchMode);
 		
 		return super.onPrepareOptionsMenu(menu);
 	}
@@ -211,6 +227,148 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 	}
 
+
+	private void createTransposeDialog() {
+		
+		final View view = DialogHelper.createTransposeDialogView(this, capoFret, transposeHalfSteps);
+		new Builder(this)
+			.setTitle(R.string.transpose)
+			.setCancelable(true)
+			.setNegativeButton(android.R.string.cancel, null)
+			.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					
+					// grab the user's chosen values for the capo and the transposition
+
+					View transposeView = view.findViewById(R.id.transpose_include);
+					View capoView = view.findViewById(R.id.capo_include);
+					
+					transposeHalfSteps = DialogHelper.getSeekBarValue(transposeView) + DialogHelper.TRANSPOSE_MIN;
+					capoFret = DialogHelper.getSeekBarValue(capoView) + DialogHelper.CAPO_MIN;
+					
+					dialog.dismiss();
+					
+				}
+			})
+			.setView(view)
+			.show();
+		
+	}
+	
+	private void startDeleteSavedFilesDialog() {
+		
+		if (!checkSdCard()) {
+			return;
+		}
+		
+		List<CharSequence> filenames = new ArrayList<CharSequence>(SaveFileHelper.getSavedFilenames());
+		
+		if (filenames.isEmpty()) {
+			Toast.makeText(this, R.string.no_saved_files, Toast.LENGTH_SHORT).show();
+			return;			
+		}
+		
+		final CharSequence[] filenameArray = filenames.toArray(new CharSequence[filenames.size()]);
+		
+		final FileAdapter dropdownAdapter = new FileAdapter(
+				this, filenames, -1, true);
+		
+		final TextView messageTextView = new TextView(this);
+		messageTextView.setText(R.string.select_files_to_delete);
+		messageTextView.setPadding(3, 3, 3, 3);
+		
+		Builder builder = new Builder(this);
+		
+		builder.setTitle(R.string.manage_saved_files)
+			.setCancelable(true)
+			.setNegativeButton(android.R.string.cancel, null)
+			.setNeutralButton(R.string.delete_all, new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					boolean[] allChecked = new boolean[dropdownAdapter.getCount()];
+					
+					for (int i = 0; i < allChecked.length; i++) {
+						allChecked[i] = true;
+					}
+					verifyDelete(filenameArray, allChecked, dialog);
+					
+				}
+			})
+			.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					
+					verifyDelete(filenameArray, dropdownAdapter.getCheckedItems(), dialog);
+					
+				}
+			})
+			.setView(messageTextView)
+			.setSingleChoiceItems(dropdownAdapter, 0, new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dropdownAdapter.checkOrUncheck(which);
+					
+				}
+			});
+		
+		builder.show();
+		
+	}
+
+	protected void verifyDelete(final CharSequence[] filenameArray,
+			final boolean[] checkedItems, final DialogInterface parentDialog) {
+		
+		Builder builder = new Builder(this);
+		
+		int deleteCount = 0;
+		
+		for (int i = 0; i < checkedItems.length; i++) {
+			if (checkedItems[i]) {
+				deleteCount++;
+			}
+		}
+		
+		
+		final int finalDeleteCount = deleteCount;
+		
+		if (finalDeleteCount > 0) {
+			
+			builder.setTitle(R.string.delete_saved_file)
+				.setCancelable(true)
+				.setMessage(String.format(getText(R.string.are_you_sure).toString(), finalDeleteCount))
+				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// ok, delete
+					
+					for (int i = 0; i < checkedItems.length; i++) {
+						if (checkedItems[i]) {
+							SaveFileHelper.deleteFile(filenameArray[i].toString());
+						}
+					}
+					
+					String toastText = String.format(getText(R.string.files_deleted).toString(), finalDeleteCount);
+					Toast.makeText(FindChordsActivity.this, toastText, Toast.LENGTH_SHORT).show();
+					
+					dialog.dismiss();
+					parentDialog.dismiss();
+					
+				}
+			});
+			builder.setNegativeButton(android.R.string.cancel, null);
+			builder.show();
+		}
+		
+		
+	}
+	
+	
 	private void showOpenFileDialog() {
 		
 		if (!checkSdCard()) {
@@ -224,14 +382,16 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 			return;
 		}
 		
+		int fileToSelect = filename != null ? filenames.indexOf(filename) : -1;
+		
 		ArrayAdapter<CharSequence> dropdownAdapter = new FileAdapter(
-				this, filenames, -1, false);
+				this, filenames, fileToSelect, false);
 		
 		Builder builder = new Builder(this);
 		
 		builder.setTitle(R.string.open_file)
 			.setCancelable(true)
-			.setSingleChoiceItems(dropdownAdapter, -1, new DialogInterface.OnClickListener() {
+			.setSingleChoiceItems(dropdownAdapter, fileToSelect, new DialogInterface.OnClickListener() {
 				
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
@@ -310,19 +470,6 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 
 	    return super.onKeyDown(keyCode, event);
 	}	
-	
-	/**
-     * Select Text in the webview and automatically sends the selected text to the clipboard
-     */
-    private void selectAndCopyText() {
-        try {
-         KeyEvent shiftPressEvent = new KeyEvent(0,0,KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_SHIFT_LEFT,0,0);
-         shiftPressEvent.dispatch(webView);
-         
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
-    } 
 
 	private void performSearch() {
 		
@@ -527,11 +674,6 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 		final EditText editText = createEditTextForFilenameSuggestingDialog();
 		
-		if (filename != null) {
-			//just suggest the same filename as before
-			editText.setText(filename);
-		}
-		
 		DialogInterface.OnClickListener onClickListener = new DialogInterface.OnClickListener() {
 			
 			@Override
@@ -542,7 +684,30 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 					Toast.makeText(FindChordsActivity.this, R.string.enter_good_filename, Toast.LENGTH_SHORT).show();
 				} else {
 					
-					saveFile(editText.getText().toString(), chordText);
+					if (SaveFileHelper.fileExists(editText.getText().toString())) {
+
+						new Builder(FindChordsActivity.this)
+							.setCancelable(true)
+							.setTitle(R.string.overwrite_file_title)
+							.setMessage(R.string.overwrite_file)
+							.setNegativeButton(android.R.string.cancel, null)
+							.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+								
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									saveFile(editText.getText().toString(), chordText);
+									
+								}
+							})
+							.show();
+						
+						
+							
+					} else {
+						
+					}
+					
+					
 				}
 				
 				
@@ -621,17 +786,24 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 			}
 		});
 		
-		// create an initial filename to suggest to the user
-		String filename;
-		if (!TextUtils.isEmpty(searchEditText.getText())) {
-			filename = searchEditText.getText().toString().trim().replace(' ', '_') + ".txt";
+		String newFilename;
+		
+		if (filename != null) {
+			//just suggest the same filename as before
+			newFilename = filename;
 		} else {
-			filename = "filename.txt";
+			// create an initial filename to suggest to the user
+			if (!TextUtils.isEmpty(searchEditText.getText())) {
+				newFilename = searchEditText.getText().toString().trim().replace(' ', '_') + ".txt";
+			} else {
+				newFilename = "filename.txt";
+			}
 		}
-		editText.setText(filename);
+				
+		editText.setText(newFilename);
 		
 		// highlight everything but the .txt at the end
-		editText.setSelection(0, filename.length() - 4);
+		editText.setSelection(0, newFilename.length() - 4);
 		
 		return editText;
 	}
@@ -748,13 +920,21 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	
 	private void switchToSearchingMode() {
 		
+		resetData();
+		
+		searchingView.setVisibility(View.VISIBLE);
+		viewingTextView.setVisibility(View.GONE);
+	}
+
+	private void resetData() {
+		
 		chordText = null;
 		filename = null;
 		chordsInText = null;
 		searchEditText.setText(null);
+		capoFret = 0;
+		transposeHalfSteps = 0;
 		
-		searchingView.setVisibility(View.VISIBLE);
-		viewingTextView.setVisibility(View.GONE);
 	}
 
 	private class CustomWebViewClient extends WebViewClient {

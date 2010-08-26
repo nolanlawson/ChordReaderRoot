@@ -5,6 +5,10 @@
 	<item android:id="@+id/menu_search_chords" android:title="@string/search_for_chords"
 		android:alphabeticShortcut="@string/search_for_chords" android:icon="@drawable/ic_menu_search" />
 
+	<item android:id="@+id/menu_transpose" android:title="@string/transpose"
+		android:alphabeticShortcut="@string/transpose" android:icon="@drawable/ic_menu_music_up" />
+
+
 	<item android:id="@+id/menu_save_chords" android:title="@string/save_chords"
 		android:alphabeticShortcut="@string/save_chords" android:icon="@drawable/ic_menu_save" />
 

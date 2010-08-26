@@ -31,6 +31,14 @@ public class SaveFileHelper {
 		
 	}
 	
+	public static boolean fileExists(String filename) {
+		File catlogDir = getBaseDirectory();
+		
+		File file = new File(catlogDir, filename);
+		
+		return file.exists();
+	}
+	
 	public static void deleteFile(String filename) {
 		
 		File catlogDir = getBaseDirectory();

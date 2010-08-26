@@ -22,5 +22,14 @@
     <string name="no_saved_files">No saved files found.</string>
     <string name="search_for_chords">Search</string>
     <string name="save_chords">Save</string>
-    
+    <string name="overwrite_file">The existing file will be overwritten.</string>
+    <string name="overwrite_file_title">Overwrite File</string>
+    <string name="transpose">Transpose</string>
+    <string name="select_files_to_delete">Select files to delete.</string>
+    <string name="delete_all">Delete All</string>
+    <string name="delete_saved_file">Delete File(s)</string>
+    <string name="are_you_sure">Are you sure? %d file(s) will be deleted.</string>
+    <string name="files_deleted">%d file(s) deleted.</string>
+    <string name="capo_title">Capo on Fret:</string>
+    <string name="transpose_title">Transpose (half-steps):</string>
 </resources>
