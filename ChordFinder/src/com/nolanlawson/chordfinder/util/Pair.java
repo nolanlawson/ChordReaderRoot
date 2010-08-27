@@ -22,6 +22,10 @@ public class Pair<E,T> {
 		this.second = second;
 	}
 	
+	public String toString() {
+		return "<" + first + ", " + second + ">";
+	}
+	
 	
 	
 }

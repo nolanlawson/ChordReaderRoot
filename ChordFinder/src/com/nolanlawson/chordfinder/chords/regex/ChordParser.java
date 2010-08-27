@@ -21,7 +21,8 @@ import com.nolanlawson.chordfinder.util.UtilLogger;
 public class ChordParser {
 
 	private static UtilLogger log = new UtilLogger(ChordParser.class);
-	private static Pattern nonWhitespacePattern = Pattern.compile("\\S+");
+	// characters that may show up in a written chord
+	private static Pattern tokenPattern = Pattern.compile("[\\w#+/]+");
 	private static List<String> commonWordsThatResembleChords = Arrays.asList("a","am");
 	
 	/**
@@ -110,6 +111,11 @@ public class ChordParser {
 
 	}
 
+	/**
+	 * Return an ordered list of the chordsInText in the text
+	 * @param text
+	 * @return
+	 */
 	public static List<ChordInText> findChordsInText(String text) {
 		
 		List<ChordInText> result = new ArrayList<ChordInText>();
@@ -125,6 +131,9 @@ public class ChordParser {
 			offset += line.length() + 1; // plus one for the \n
 			
 		}
+
+		// walk backwards through each chord from finish to start
+		Collections.sort(result, ChordInText.sortByStartIndex());
 		
 		return result;
 		
@@ -197,8 +206,15 @@ public class ChordParser {
 						candidateChordInText.getStartIndex() - offset, 
 						candidateChordInText.getEndIndex() - offset);
 				
+				// very unlikely to be a chord
+				if (candidateChordString.length() == 1 
+						&& Character.isLowerCase(candidateChordString.charAt(0))) {
+					continue;
+				}
+				
 				// very likely to be a chord
-				if (!commonWordsThatResembleChords.contains(candidateChordString.toLowerCase())) {
+				if (candidateChordString.length() > 1 
+						&& !commonWordsThatResembleChords.contains(candidateChordString.toLowerCase())) {
 					result.add(candidateChordInText);
 					continue;
 				}
@@ -227,7 +243,7 @@ public class ChordParser {
 		
 		List<TokenInText> result = new ArrayList<TokenInText>();
 		
-		Matcher matcher = nonWhitespacePattern.matcher(line);
+		Matcher matcher = tokenPattern.matcher(line);
 		
 		while (matcher.find()) {
 			result.add(TokenInText.newTokenInText(matcher.group(), matcher.start(), matcher.end()));
