@@ -49,7 +49,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.TextView.OnEditorActionListener;
 
-import com.nolanlawson.chordfinder.R.id;
 import com.nolanlawson.chordfinder.adapter.FileAdapter;
 import com.nolanlawson.chordfinder.chords.regex.ChordInText;
 import com.nolanlawson.chordfinder.chords.regex.ChordParser;
@@ -127,7 +126,7 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 				log.d("index is %s",intent.getData().getLastPathSegment());
 				
 				// index in the list of chords in text
-				int index = Integer.parseInt(intent.getData().getLastPathSegment());
+				int index = Integer.parseInt(intent.getData().getQueryParameter("index"));
 				
 				ChordInText chordInText = chordsInText.get(index);
 				
@@ -1070,7 +1069,11 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 			stringBuilder.insert(0, chordInText.getChord().toPrintableString());
 			
 			// uri to point back to our broadcast receiver
-			Uri uri = Uri.withAppendedPath(Uri.parse(getPackageName() + "://index"), String.valueOf(i));
+			Uri uri = new Uri.Builder()
+					.scheme(getPackageName())
+					.appendPath("click_chord")
+					.appendQueryParameter("index", Integer.toString(i))
+					.build();
 			
 			stringBuilder.insert(0, "<a href=\"" + uri.toString() + "\">");
 	
