@@ -53,6 +53,7 @@ import com.nolanlawson.chordfinder.R.id;
 import com.nolanlawson.chordfinder.adapter.FileAdapter;
 import com.nolanlawson.chordfinder.chords.regex.ChordInText;
 import com.nolanlawson.chordfinder.chords.regex.ChordParser;
+import com.nolanlawson.chordfinder.helper.ChordDictionary;
 import com.nolanlawson.chordfinder.helper.DialogHelper;
 import com.nolanlawson.chordfinder.helper.SaveFileHelper;
 import com.nolanlawson.chordfinder.helper.TransposeHelper;
@@ -105,6 +106,8 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
         switchToSearchingMode();
         
         registerClickReceiver();
+        
+        ChordDictionary.initialize(this);
     }
     
     @Override
@@ -121,12 +124,24 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 			public void onReceive(Context context, Intent intent) {
 				
 				log.d("data string is %s", intent.getDataString());
-				log.d("id is %s",intent.getData().getLastPathSegment());
+				log.d("index is %s",intent.getData().getLastPathSegment());
 				
-				int id = Integer.parseInt(intent.getData().getLastPathSegment());
+				// index in the list of chords in text
+				int index = Integer.parseInt(intent.getData().getLastPathSegment());
 				
+				ChordInText chordInText = chordsInText.get(index);
 				
+				log.d("chordInText is %s", chordInText);
 				
+				// TODO: flesh this out
+				List<String> guitarChords = ChordDictionary.getGuitarChordsForChord(chordInText.getChord());
+				
+				String guitarChord = guitarChords == null ? "unknown" : guitarChords.get(0);
+				
+				new Builder(FindChordsActivity.this)
+					.setCancelable(true)
+					.setMessage(guitarChord)
+					.show();
 			}
 		};
 		IntentFilter intentFilter = new IntentFilter();
@@ -1055,8 +1070,7 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 			stringBuilder.insert(0, chordInText.getChord().toPrintableString());
 			
 			// uri to point back to our broadcast receiver
-			int normalIndex = chordsInText.size() - i - 1;
-			Uri uri = Uri.withAppendedPath(Uri.parse(getPackageName() + "://index"), String.valueOf(normalIndex));
+			Uri uri = Uri.withAppendedPath(Uri.parse(getPackageName() + "://index"), String.valueOf(i));
 			
 			stringBuilder.insert(0, "<a href=\"" + uri.toString() + "\">");
 	
