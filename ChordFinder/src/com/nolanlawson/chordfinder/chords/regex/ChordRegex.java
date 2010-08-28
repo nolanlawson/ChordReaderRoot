@@ -28,8 +28,8 @@ public class ChordRegex {
 	
 	private static final String CHORD_REGEX_WITH_PARENS = "[\\(\\[]" + CHORD_REGEX + "[\\)\\]]";
 	
-	private static Pattern chordPattern = Pattern.compile(CHORD_REGEX, Pattern.CASE_INSENSITIVE);
-	private static Pattern chordWithParensPattern = Pattern.compile(CHORD_REGEX_WITH_PARENS, Pattern.CASE_INSENSITIVE);
+	private static Pattern chordPattern = Pattern.compile(CHORD_REGEX);
+	private static Pattern chordWithParensPattern = Pattern.compile(CHORD_REGEX_WITH_PARENS);
 
 	
 	

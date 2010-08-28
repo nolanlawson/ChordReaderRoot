@@ -1158,6 +1158,8 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		
+		
+		
 		log.d("y is %g", event.getY());
 		log.d("view height is %d", viewingTextView.getHeight());
 		

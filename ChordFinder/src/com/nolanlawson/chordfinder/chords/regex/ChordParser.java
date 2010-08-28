@@ -23,7 +23,8 @@ public class ChordParser {
 	private static UtilLogger log = new UtilLogger(ChordParser.class);
 	// characters that may show up in a written chord
 	private static Pattern tokenPattern = Pattern.compile("[\\w#+/]+");
-	private static List<String> commonWordsThatResembleChords = Arrays.asList("a","am");
+	private static Pattern lowercaseWordPattern = Pattern.compile("[a-z]+");
+	
 	
 	/**
 	 * Attempts to parse a string representation of a chord into a Chord object.  Returns null if it fails to match.
@@ -206,32 +207,38 @@ public class ChordParser {
 						candidateChordInText.getStartIndex() - offset, 
 						candidateChordInText.getEndIndex() - offset);
 				
-				// very unlikely to be a chord
+				//
+				// The following are heuristics to filter out tokens that are unlikely to be actual chords
+				//
+				
+				
+				// case where a capital letter is followed by a period
 				if (candidateChordString.length() == 1 
-						&& Character.isLowerCase(candidateChordString.charAt(0))) {
+						&& candidateChordInText.getEndIndex() - offset < line.length()
+						&& line.charAt(candidateChordInText.getEndIndex() - offset) == '.') {
+					// unlikely to be a chord
 					continue;
-				}
-				
-				// very likely to be a chord
-				if (candidateChordString.length() > 1 
-						&& !commonWordsThatResembleChords.contains(candidateChordString.toLowerCase())) {
-					result.add(candidateChordInText);
-					continue;
-				}
-				
-				if (tokens.length == 1) { // also likely to be a chord, if it's the only token in the line
-					result.add(candidateChordInText);
-					continue;
-				}
-				
-				boolean hasPreviousChord = i > 0 && candidateChordsInText[i - 1] != null;
-				boolean hasNextChord = i < candidateChordsInText.length - 1 && candidateChordsInText[i + 1] != null;
-				
-				// probably a valid chord
-				if (hasPreviousChord || hasNextChord) {
 					
-					result.add(candidateChordsInText[i]);
 				}
+				
+				// case where "Am" is followed by "I"
+				if (candidateChordString.equals("Am") 
+						&& i + 1 < tokens.length
+						&& tokens[i + 1].equals("I")) {
+					// unlikely to be a chord
+					continue;
+					
+				}				
+				// case where "A" is followed by a lowercase word, e.g. "lady"
+				if (candidateChordString.equals("A") 
+						&& i + 1 < tokens.length
+						&& lowercaseWordPattern.matcher(tokens[i + 1].getToken()).matches()) {
+					// unlikely to be a chord
+					continue;
+					
+				}
+				
+				result.add(candidateChordsInText[i]);
 			}
 		}
 		
