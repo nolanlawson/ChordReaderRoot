@@ -32,6 +32,10 @@ public enum ChordExtended {
 	AugmentedDominant7 (Major, new String[]{"7#5", "7(#5)"}),
 	AugmentedMajor7 (Major, new String[]{"maj7#5", "maj7(#5)"}),
 	
+	// TODO: I don't know what this one is - can't find it on wikipedia
+	Minor9 (Minor, new String[]{"min9", "m9","minor9"}),
+	
+	
 	;
 	/**
 	 * TODO: add additional seventh chords

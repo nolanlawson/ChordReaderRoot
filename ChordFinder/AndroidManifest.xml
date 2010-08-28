@@ -15,7 +15,7 @@
 			
 		</activity>
 		
-		<activity android:name=".ChordLinkClickedActivity">android:name
+		<activity android:name=".ChordLinkClickedActivity" android:theme="@android:style/Theme.Dialog">
 			
 			<intent-filter>
 			    <category android:name="android.intent.category.DEFAULT" />

@@ -93,7 +93,6 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	private int transposeHalfSteps = 0;
 	
 	private TextView viewingTextView;
-	private BroadcastReceiver receiver;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -108,8 +107,6 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
         // initially, search rather than view chords
         switchToSearchingMode();
         
-        registerClickReceiver();
-        
         ChordDictionary.initialize(this);
     }
     
@@ -117,41 +114,8 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
     public void onDestroy() {
     	
     	super.onDestroy();
-    	unregisterReceiver(receiver);
     }
 
-	private void registerClickReceiver() {
-		receiver = new BroadcastReceiver() {
-			
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				
-				log.d("data string is %s", intent.getDataString());
-				log.d("index is %s",intent.getData().getLastPathSegment());
-				
-				// index in the list of chords in text
-				int index = Integer.parseInt(intent.getData().getQueryParameter("index"));
-				
-				ChordInText chordInText = chordsInText.get(index);
-				
-				log.d("chordInText is %s", chordInText);
-				
-				// TODO: flesh this out
-				List<String> guitarChords = ChordDictionary.getGuitarChordsForChord(chordInText.getChord());
-				
-				String guitarChord = guitarChords == null ? "unknown" : guitarChords.get(0);
-				
-				new Builder(FindChordsActivity.this)
-					.setCancelable(true)
-					.setMessage(guitarChord)
-					.show();
-			}
-		};
-		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addDataScheme(getPackageName());
-		registerReceiver(receiver, intentFilter);
-		
-	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -1101,11 +1065,13 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 			//log.d("substr is '%s'", sb.substring(
 			//		newStartAndEndPosition.getFirst(), newStartAndEndPosition.getSecond()));
 			
+			String chordAsString = chordsInText.get(i).getChord().toPrintableString();
+			
 			// uri to point back to our broadcast receiver
 			Uri uri = new Uri.Builder()
 					.scheme(getPackageName())
 					.appendPath("click_chord")
-					.appendQueryParameter("index", Integer.toString(i))
+					.appendQueryParameter("chord", chordAsString)
 					.build();
 			
 			URLSpan urlSpan = new URLSpan(uri.toString());
@@ -1158,10 +1124,10 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		
+		// record where the user touched so we know where to place the window, so it will be out of the way
 		
-		
-		log.d("y is %g", event.getY());
-		log.d("view height is %d", viewingTextView.getHeight());
+		ChordLinkClickedActivity.lastXRelativeCoordinate = event.getX() / viewingTextView.getWidth();
+		ChordLinkClickedActivity.lastYRelativeCoordinate = event.getY() / viewingTextView.getHeight();
 		
 		return false;
 	}
