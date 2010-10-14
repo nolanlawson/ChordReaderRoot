@@ -2,14 +2,15 @@ package com.nolanlawson.chordfinder.test;
 
 import android.test.ActivityInstrumentationTestCase2;
 
-import com.nolanlawson.chordfinder.FindChordsActivity;
-import com.nolanlawson.chordfinder.chords.Chord;
-import com.nolanlawson.chordfinder.chords.regex.ChordParser;
-import static com.nolanlawson.chordfinder.chords.ChordRoot.*;
-import static com.nolanlawson.chordfinder.chords.ChordAdded.*;
-import static com.nolanlawson.chordfinder.chords.ChordSuspended.*;
-import static com.nolanlawson.chordfinder.chords.ChordQuality.*;
-import static com.nolanlawson.chordfinder.chords.ChordExtended.*;
+import com.nolanlawson.chordreader.FindChordsActivity;
+import com.nolanlawson.chordreader.chords.Chord;
+import com.nolanlawson.chordreader.chords.regex.ChordParser;
+
+import static com.nolanlawson.chordreader.chords.ChordAdded.*;
+import static com.nolanlawson.chordreader.chords.ChordExtended.*;
+import static com.nolanlawson.chordreader.chords.ChordQuality.*;
+import static com.nolanlawson.chordreader.chords.ChordRoot.*;
+import static com.nolanlawson.chordreader.chords.ChordSuspended.*;
 
 public class RegexTest extends
 		ActivityInstrumentationTestCase2<FindChordsActivity> {

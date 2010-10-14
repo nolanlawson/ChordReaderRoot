@@ -59,10 +59,12 @@
 		
 	</LinearLayout>
 
-	<TextView android:id="@+id/find_chords_viewing_text_view"
-		android:text="chords go here" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:linksClickable="true"
-		android:textColor="@android:color/primary_text_dark_nodisable"
-		android:textSize="@dimen/text_size_medium"
-		android:typeface="monospace" />
+	<ScrollView android:layout_height="wrap_content" android:layout_width="fill_parent">
+		<TextView android:id="@+id/find_chords_viewing_text_view"
+			android:text="chords go here" android:layout_width="fill_parent"
+			android:layout_height="wrap_content" android:linksClickable="true"
+			android:textColor="@android:color/primary_text_dark_nodisable"
+			android:textSize="@dimen/text_size_medium"
+			android:typeface="monospace" android:paddingRight="3dp"/>
+	</ScrollView>	
 </LinearLayout>
