@@ -108,7 +108,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	private String url = null;
 	
 	private String filename;
-	private String chordText;
+	private volatile String chordText;
 	private List<ChordInText> chordsInText;
 	private int capoFret = 0;
 	private int transposeHalfSteps = 0;
@@ -186,11 +186,13 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	    case R.id.menu_settings:
 	    	startSettingsActivity();
 	    	break;
+	    case R.id.menu_edit_file:
+	    	showConfirmChordchartDialog();
+	    	break;
 	    	
 	    }
 	    return false;
 	}
-
 
 	private void startSettingsActivity() {
 
@@ -234,12 +236,17 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		searchChordsMenuItem.setVisible(!searchMode);
 		searchChordsMenuItem.setEnabled(!searchMode);
 		
-		// if we're not in viewing mode, there's no need to show the 'save chords' menu item
+		// if we're not in viewing mode, there's no need to show the 'save chords' or 'edit chords' menu item
 		
 		MenuItem saveChordsMenuItem = menu.findItem(R.id.menu_save_chords);
 		
 		saveChordsMenuItem.setVisible(!searchMode);
 		saveChordsMenuItem.setEnabled(!searchMode);
+		
+		MenuItem editMenuItem = menu.findItem(R.id.menu_edit_file);
+		
+		editMenuItem.setVisible(!searchMode);
+		editMenuItem.setEnabled(!searchMode);
 		
 		// only show transpose in viewing mode
 		

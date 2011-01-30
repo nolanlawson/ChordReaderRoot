@@ -148,7 +148,7 @@ public class SaveFileHelper {
 		PrintStream out = null;
 		try {
 			// specifying 8192 gets rid of an annoying warning message
-			out = new PrintStream(new BufferedOutputStream(new FileOutputStream(newFile, true), 8192));
+			out = new PrintStream(new BufferedOutputStream(new FileOutputStream(newFile, false), 8192));
 			
 			out.print(filetext);
 			
