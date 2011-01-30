@@ -53,4 +53,10 @@ public class PreferenceHelper {
 		textSize = unscaledSize;
 	}
 	
+	public static boolean getShowAds(Context context) {
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+		
+		return sharedPrefs.getBoolean(context.getText(R.string.pref_show_ads).toString(), true);
+	}
+	
 }

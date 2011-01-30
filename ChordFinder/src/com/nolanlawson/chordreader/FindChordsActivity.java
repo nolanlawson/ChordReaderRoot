@@ -191,6 +191,15 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		PreferenceHelper.clearCache();
 		viewingTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, PreferenceHelper.getTextSizePreference(this));
 		
+		// ads may have been enabled/disabled
+		if (adView.getVisibility() == View.VISIBLE && !PreferenceHelper.getShowAds(this)) {
+			adView.setVisibility(View.GONE);
+		} else if (PreferenceHelper.getShowAds(this) && viewingScrollView.getVisibility() == View.GONE) {
+			// in search mode and ads are visible
+			adView.setVisibility(View.VISIBLE);
+		}
+		
+		
 	}
 
 	private void startAboutActivity() {
@@ -280,6 +289,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		AdManager.setTestDevices(new String[] { AdManager.TEST_EMULATOR, "1C7A94DAADBF54DB8F7990E3EE1BBD76" });        
 		adView = (AdView) findViewById(R.id.ad);
 		adView.setAdListener(this);
+		adView.setVisibility(PreferenceHelper.getShowAds(this) ? View.VISIBLE : View.GONE);
 		
 		mainView = (LinearLayout) findViewById(R.id.find_chords_main_view);
 		
@@ -1080,54 +1090,57 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	private void dismissAdsAfterAwhile() {
 		// gracefully dismiss the ad after the user has looked at the chords for a few seconds
 		
-		adView.setVisibility(View.VISIBLE);
-		adView.requestFreshAd();
-		
-		AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+		boolean showAds = PreferenceHelper.getShowAds(this);
+		adView.setVisibility(showAds ? View.VISIBLE : View.GONE);
+		if (showAds) {
+			adView.requestFreshAd();
 			
-			@Override
-			protected Void doInBackground(Void... params) {
+			AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
 				
-				try {
-					Thread.sleep(AD_DISMISS_TIME);
-				} catch (InterruptedException e) {
-					log.e(e, "unexpected exception");
+				@Override
+				protected Void doInBackground(Void... params) {
+					
+					try {
+						Thread.sleep(AD_DISMISS_TIME);
+					} catch (InterruptedException e) {
+						log.e(e, "unexpected exception");
+					}
+					
+					return null;
 				}
-				
-				return null;
-			}
-
-			@Override
-			protected void onPostExecute(Void result) {
-				super.onPostExecute(result);
-				Animation animation = AnimationUtils.loadAnimation(FindChordsActivity.this, R.anim.slide_top_to_bottom);
-				adView.setAnimation(animation);
-				animation.setAnimationListener(new AnimationListener() {
-					
-					@Override
-					public void onAnimationStart(Animation animation) {
-					}
-					
-					@Override
-					public void onAnimationRepeat(Animation animation) {
-					}
-					
-					@Override
-					public void onAnimationEnd(Animation animation) {
-						runOnUiThread(new Runnable(){
-
-							@Override
-							public void run() {
-								adView.setVisibility(View.GONE);
-								
-							}
-						});
-					}
-				});
-				adView.startAnimation(animation);
-			}
-		};
-		task.execute((Void)null);
+	
+				@Override
+				protected void onPostExecute(Void result) {
+					super.onPostExecute(result);
+					Animation animation = AnimationUtils.loadAnimation(FindChordsActivity.this, R.anim.slide_top_to_bottom);
+					adView.setAnimation(animation);
+					animation.setAnimationListener(new AnimationListener() {
+						
+						@Override
+						public void onAnimationStart(Animation animation) {
+						}
+						
+						@Override
+						public void onAnimationRepeat(Animation animation) {
+						}
+						
+						@Override
+						public void onAnimationEnd(Animation animation) {
+							runOnUiThread(new Runnable(){
+	
+								@Override
+								public void run() {
+									adView.setVisibility(View.GONE);
+									
+								}
+							});
+						}
+					});
+					adView.startAnimation(animation);
+				}
+			};
+			task.execute((Void)null);
+		}
 	}
 
 	private void applyLinkifiedChordsTextToTextView(Spannable newText) {
@@ -1225,8 +1238,11 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 		searchingView.setVisibility(View.VISIBLE);
 		viewingScrollView.setVisibility(View.GONE);
-		adView.setVisibility(View.VISIBLE);
-		adView.requestFreshAd();
+		boolean showAds = PreferenceHelper.getShowAds(this);
+		adView.setVisibility(showAds ? View.VISIBLE : View.GONE);
+		if (showAds) {
+			adView.requestFreshAd();
+		}
 	}
 
 	private void resetData() {
