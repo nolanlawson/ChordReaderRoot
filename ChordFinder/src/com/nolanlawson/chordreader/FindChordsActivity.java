@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -82,6 +83,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	private static final int PROGRESS_DIALOG_MIN_TIME = 600;
 	private static final long AD_DISMISS_TIME = 10000;
 	private static final long HISTORY_WINDOW = TimeUnit.SECONDS.toMillis(60 * 60 * 24 * 360); // about one year 
+	private static final long PAGE_WAIT_TIME = 3000;
 	
 	private static UtilLogger log = new UtilLogger(FindChordsActivity.class);
 	
@@ -291,6 +293,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		messageMainView = findViewById(R.id.find_chords_message_main_view);
 		messageSecondaryView = findViewById(R.id.find_chords_message_secondary_view);
 		messageSecondaryView.setOnClickListener(this);
+		messageSecondaryView.setEnabled(false);
 		
 		messageTextView = (TextView) findViewById(R.id.find_chords_message_text_view);
 		
@@ -763,7 +766,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		String chordChart = WebPageExtractionHelper.extractChordChart(
 				chordWebpage, html);
 		
-		log.d("chordChart is: %s", chordChart);
+		log.d("chordChart is %s...", chordChart != null ? (chordChart.substring(0, Math.min(chordChart.length(),30))) : chordChart);
 		
 		boolean result = ChordParser.containsLineWithChords(chordChart);
 		
@@ -1097,7 +1100,9 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 				
 				progressDialog.dismiss();
 				
-				dismissAdsAfterAwhile();
+				if (adView.getVisibility() == View.VISIBLE) {
+					dismissAdsAfterAwhile();
+				}
 				
 			}
 			
@@ -1111,57 +1116,53 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	private void dismissAdsAfterAwhile() {
 		// gracefully dismiss the ad after the user has looked at the chords for a few seconds
 		
-		boolean showAds = PreferenceHelper.getShowAds(this);
-		adView.setVisibility(showAds ? View.VISIBLE : View.GONE);
-		if (showAds) {
-			adView.requestFreshAd();
+		adView.requestFreshAd();
+		
+		AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
 			
-			AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+			@Override
+			protected Void doInBackground(Void... params) {
 				
-				@Override
-				protected Void doInBackground(Void... params) {
+				try {
+					Thread.sleep(AD_DISMISS_TIME);
+				} catch (InterruptedException e) {
+					log.e(e, "unexpected exception");
+				}
+				
+				return null;
+			}
+
+			@Override
+			protected void onPostExecute(Void result) {
+				super.onPostExecute(result);
+				Animation animation = AnimationUtils.loadAnimation(FindChordsActivity.this, R.anim.slide_top_to_bottom);
+				adView.setAnimation(animation);
+				animation.setAnimationListener(new AnimationListener() {
 					
-					try {
-						Thread.sleep(AD_DISMISS_TIME);
-					} catch (InterruptedException e) {
-						log.e(e, "unexpected exception");
+					@Override
+					public void onAnimationStart(Animation animation) {
 					}
 					
-					return null;
-				}
-	
-				@Override
-				protected void onPostExecute(Void result) {
-					super.onPostExecute(result);
-					Animation animation = AnimationUtils.loadAnimation(FindChordsActivity.this, R.anim.slide_top_to_bottom);
-					adView.setAnimation(animation);
-					animation.setAnimationListener(new AnimationListener() {
-						
-						@Override
-						public void onAnimationStart(Animation animation) {
-						}
-						
-						@Override
-						public void onAnimationRepeat(Animation animation) {
-						}
-						
-						@Override
-						public void onAnimationEnd(Animation animation) {
-							runOnUiThread(new Runnable(){
-	
-								@Override
-								public void run() {
-									adView.setVisibility(View.GONE);
-									
-								}
-							});
-						}
-					});
-					adView.startAnimation(animation);
-				}
-			};
-			task.execute((Void)null);
-		}
+					@Override
+					public void onAnimationRepeat(Animation animation) {
+					}
+					
+					@Override
+					public void onAnimationEnd(Animation animation) {
+						runOnUiThread(new Runnable(){
+
+							@Override
+							public void run() {
+								adView.setVisibility(View.GONE);
+								
+							}
+						});
+					}
+				});
+				adView.startAnimation(animation);
+			}
+		};
+		task.execute((Void)null);
 	}
 
 	private void applyLinkifiedChordsTextToTextView(Spannable newText) {
@@ -1294,43 +1295,6 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		return false;
 	}
 	
-	private class CustomWebViewClient extends WebViewClient {
-
-		@Override
-		public boolean shouldOverrideUrlLoading(WebView view, final String url) {
-			handler.post(new Runnable() {
-				
-				@Override
-				public void run() {
-					loadUrl(url);
-					
-				}
-			});
-			
-			return true;
-		}
-
-		@Override
-		public void onPageFinished(WebView view, String url) {
-			super.onPageFinished(view, url);
-			log.d("onPageFinished()　" + url);
-			urlLoaded(url);
-			
-
-			
-		}
-
-		@Override
-		public void onPageStarted(WebView view, String url, Bitmap favicon) {
-			super.onPageStarted(view, url, favicon);
-			
-			urlLoading(url);
-			
-		}
-		
-		
-	}
-
 	@Override
 	public void onFailedToReceiveAd(AdView arg0) {
 		log.d("onFailedToReceiveAd()");
@@ -1349,5 +1313,81 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	@Override
 	public void onReceiveRefreshedAd(AdView arg0) {
 		log.d("onReceiveRefreshedAd()");		
+	}
+	
+	private class CustomWebViewClient extends WebViewClient {
+		
+		private AtomicInteger taskCounter = new AtomicInteger(0);
+		
+		@Override
+		public boolean shouldOverrideUrlLoading(WebView view, final String url) {
+			handler.post(new Runnable() {
+				
+				@Override
+				public void run() {
+					loadUrl(url);
+					
+				}
+			});
+			
+			return true;
+		}
+
+		@Override
+		public void onPageFinished(WebView view, final String url) {
+			super.onPageFinished(view, url);
+			log.d("onPageFinished()　" + url);
+			
+			if (url.contains("www.google.com")) {
+				// trust google to only load once
+				urlLoaded(url);
+			} else { // don't trust other websites
+				
+				// have to do this song and dance because sometimes the pages
+				// have a bazillion redirects, so I get multiple onPageFinished()
+				// before the damn thing is really done, and then my users get confused
+				// because the button says "page finished" before it really is
+				// so we just wait a couple seconds for the dust to settle and make
+				// sure that the web view is REALLY done loading
+				// TODO: find a better way to do this
+				
+				AsyncTask<Void,Void,Void> task = new AsyncTask<Void, Void, Void>() {
+	
+					private int id;
+					
+					@Override
+					protected void onPreExecute() {
+						super.onPreExecute();
+						id = taskCounter.incrementAndGet();
+					}
+	
+					@Override
+					protected Void doInBackground(Void... params) {
+						try {
+							Thread.sleep(PAGE_WAIT_TIME);
+						} catch (InterruptedException e) {}
+						return null;
+					}
+					
+					@Override
+					protected void onPostExecute(Void result) {
+						super.onPostExecute(result);
+						if (id == taskCounter.get()) {
+							urlLoaded(url);
+						}
+					}
+	
+				};
+				task.execute((Void)null);
+			}
+		}
+
+		@Override
+		public void onPageStarted(WebView view, String url, Bitmap favicon) {
+			super.onPageStarted(view, url, favicon);
+			log.d("onPageStarted()");
+			taskCounter.incrementAndGet();
+			urlLoading(url);
+		}
 	}
 }
