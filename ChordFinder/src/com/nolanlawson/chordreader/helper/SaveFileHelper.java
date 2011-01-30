@@ -87,7 +87,7 @@ public class SaveFileHelper {
 
 			@Override
 			public int compare(File object1, File object2) {
-				return new Long(object2.lastModified() - object1.lastModified()).intValue();
+				return new Long(object2.lastModified()).compareTo(object1.lastModified());
 			}});
 		
 		List<String> result = new ArrayList<String>();
