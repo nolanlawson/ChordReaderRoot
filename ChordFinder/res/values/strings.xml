@@ -39,6 +39,9 @@
     <string name="transposing">Transposing</string>
     <string name="please_wait">Please wait...</string>
     <string name="loading_title">Loading</string>
+    <string name="sort">Sort</string>
+    <string name="sort_az">Sort A-Z</string>
+    <string name="sort_by_date">Sort by Date</string>
     
     
 	<string name="pref_text_size">text_size</string>

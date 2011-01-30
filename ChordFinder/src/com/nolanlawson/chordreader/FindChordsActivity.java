@@ -3,6 +3,8 @@ package com.nolanlawson.chordreader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -164,7 +166,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	    	switchToSearchingMode();
 	    	break;
 	    case R.id.menu_open_file:
-	    	showOpenFileDialog();
+	    	showOpenFileDialog(true);
 	    	break;
 	    case R.id.menu_save_chords:
 	    	showSaveChordchartDialog();
@@ -556,7 +558,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	}
 	
 	
-	private void showOpenFileDialog() {
+	private void showOpenFileDialog(final boolean sortedByDate) {
 		
 		if (!checkSdCard()) {
 			return;
@@ -568,16 +570,33 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 			Toast.makeText(this, R.string.no_saved_files, Toast.LENGTH_SHORT).show();
 			return;
 		}
+		if (!sortedByDate) {
+			
+			Collections.sort(filenames, new Comparator<CharSequence>(){
+
+				@Override
+				public int compare(CharSequence first, CharSequence second) {
+					return first.toString().toLowerCase().compareTo(second.toString().toLowerCase());
+				}});
+		}
 		
 		int fileToSelect = filename != null ? filenames.indexOf(filename) : -1;
 		
-		ArrayAdapter<CharSequence> dropdownAdapter = new FileAdapter(
-				this, filenames, fileToSelect, false);
+		ArrayAdapter<CharSequence> dropdownAdapter = new FileAdapter(this, filenames, fileToSelect, false);
 		
 		Builder builder = new Builder(this);
 		
 		builder.setTitle(R.string.open_file)
 			.setCancelable(true)
+			.setPositiveButton(sortedByDate ? R.string.sort_az : R.string.sort_by_date, new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.dismiss();
+					showOpenFileDialog(!sortedByDate); // switch sorting
+				}
+			})
+			.setNegativeButton(android.R.string.cancel, null)
 			.setSingleChoiceItems(dropdownAdapter, fileToSelect, new DialogInterface.OnClickListener() {
 				
 				@Override
