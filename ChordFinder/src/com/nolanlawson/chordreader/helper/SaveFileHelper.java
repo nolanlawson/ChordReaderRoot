@@ -1,5 +1,6 @@
 package com.nolanlawson.chordreader.helper;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -146,7 +147,8 @@ public class SaveFileHelper {
 		}
 		PrintStream out = null;
 		try {
-			out = new PrintStream(new FileOutputStream(newFile));
+			// specifying 8192 gets rid of an annoying warning message
+			out = new PrintStream(new BufferedOutputStream(new FileOutputStream(newFile, true), 8192));
 			
 			out.print(filetext);
 			

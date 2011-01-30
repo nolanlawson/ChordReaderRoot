@@ -39,4 +39,26 @@
     <string name="transposing">Transposing</string>
     <string name="please_wait">Please wait...</string>
     <string name="loading_title">Loading</string>
+    
+    
+	<string name="pref_text_size">text_size</string>
+	<string name="pref_text_size_title">Text Size</string>
+	
+	<string name="text_size_xsmall_value">XS</string>
+	<string name="text_size_small_value">S</string>
+    <string name="text_size_medium_value">M</string>
+    <string name="text_size_large_value">L</string>
+    <string name="text_size_xlarge_value">XL</string>
+
+	<string name="text_size_xsmall_name">Extra Small (8pt)</string>
+	<string name="text_size_small_name">Small (10pt)</string>
+    <string name="text_size_medium_name">Medium (12pt)</string>
+    <string name="text_size_large_name">Large (14pt)</string>
+    <string name="text_size_xlarge_name">Extra Large (16pt)</string>
+    
+    <string name="pref_show_ads">show_ads</string>
+    <string name="pref_show_ads_title">Show Ads</string>
+    <string name="pref_show_ads_summary">You can disable this if you really want.</string>
+    
+    <string name="settings">Settings</string>
 </resources>

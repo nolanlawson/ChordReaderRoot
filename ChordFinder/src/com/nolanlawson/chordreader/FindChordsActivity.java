@@ -28,6 +28,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.URLSpan;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -56,6 +57,7 @@ import com.nolanlawson.chordreader.chords.regex.ChordInText;
 import com.nolanlawson.chordreader.chords.regex.ChordParser;
 import com.nolanlawson.chordreader.helper.ChordDictionary;
 import com.nolanlawson.chordreader.helper.DialogHelper;
+import com.nolanlawson.chordreader.helper.PreferenceHelper;
 import com.nolanlawson.chordreader.helper.SaveFileHelper;
 import com.nolanlawson.chordreader.helper.TransposeHelper;
 import com.nolanlawson.chordreader.helper.WebPageExtractionHelper;
@@ -155,11 +157,29 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	    case R.id.menu_refresh:
 	    	refreshWebView();
 	    	break;
+	    case R.id.menu_settings:
+	    	startSettingsActivity();
+	    	break;
 	    	
 	    }
 	    return false;
 	}
 
+
+	private void startSettingsActivity() {
+
+		startActivityForResult(new Intent(this, SettingsActivity.class), 1);
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		
+		// came back from the settings activity; need to update the text size
+		PreferenceHelper.clearCache();
+		viewingTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, PreferenceHelper.getTextSizePreference(this));
+		
+	}
 
 	private void startAboutActivity() {
 		Intent intent = new Intent(this, AboutActivity.class);
@@ -239,12 +259,23 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 		viewingTextView = (TextView) findViewById(R.id.find_chords_viewing_text_view);
 		viewingTextView.setOnTouchListener(this);
+		viewingTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, PreferenceHelper.getTextSizePreference(this));
 		
 		searchingView = findViewById(R.id.find_chords_finding_view);
 		
 	}
 
+	
 
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		
+		// just in case the text size has changed
+		viewingTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, PreferenceHelper.getTextSizePreference(this));
+		
+	}
 
 	private void refreshWebView() {
 		webView.reload();
