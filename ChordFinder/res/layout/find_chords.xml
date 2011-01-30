@@ -47,7 +47,7 @@
 			android:layout_height="wrap_content" android:paddingLeft="10dp"
 			android:paddingRight="10dp" android:paddingTop="5dp"
 			android:paddingBottom="5dp" android:orientation="horizontal">
-			<EditText android:layout_width="0px" android:layout_weight="1.0"
+			<AutoCompleteTextView android:layout_width="0px" android:layout_weight="1.0"
 				android:layout_height="wrap_content" android:singleLine="true"
 				android:hint="@string/chord_search_hint" android:id="@+id/find_chords_edit_text"
 				android:imeOptions="actionSearch" />

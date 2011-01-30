@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -47,6 +48,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -63,6 +65,7 @@ import com.admob.android.ads.AdView;
 import com.nolanlawson.chordreader.adapter.FileAdapter;
 import com.nolanlawson.chordreader.chords.regex.ChordInText;
 import com.nolanlawson.chordreader.chords.regex.ChordParser;
+import com.nolanlawson.chordreader.db.ChordReaderDBHelper;
 import com.nolanlawson.chordreader.helper.ChordDictionary;
 import com.nolanlawson.chordreader.helper.DialogHelper;
 import com.nolanlawson.chordreader.helper.PreferenceHelper;
@@ -75,11 +78,12 @@ import com.nolanlawson.chordreader.util.UtilLogger;
 public class FindChordsActivity extends Activity implements AdListener, OnEditorActionListener, OnClickListener, TextWatcher, OnTouchListener {
 
 	private static final int PROGRESS_DIALOG_MIN_TIME = 600;
-	private static final int AD_DISMISS_TIME = 10000;
+	private static final long AD_DISMISS_TIME = 10000;
+	private static final long HISTORY_WINDOW = TimeUnit.SECONDS.toMillis(60 * 60 * 24 * 360); // about one year 
 	
 	private static UtilLogger log = new UtilLogger(FindChordsActivity.class);
 	
-	private EditText searchEditText;
+	private AutoCompleteTextView searchEditText;
 	private WebView webView;
 	private View messageMainView, messageSecondaryView, searchingView;
 	private TextView messageTextView;
@@ -106,6 +110,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	private ScrollView viewingScrollView;
 	private AdView adView;
 	private LinearLayout mainView;
+	private ArrayAdapter<String> queryAdapter;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -254,9 +259,15 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 
 	private void setUpWidgets() {
 		
-		searchEditText = (EditText) findViewById(R.id.find_chords_edit_text);
+		searchEditText = (AutoCompleteTextView) findViewById(R.id.find_chords_edit_text);
 		searchEditText.setOnEditorActionListener(this);
 		searchEditText.addTextChangedListener(this);
+		
+		ChordReaderDBHelper dbHelper = new ChordReaderDBHelper(this);
+		List<String> queries = dbHelper.findAllQueriesAfter(System.currentTimeMillis() - HISTORY_WINDOW);
+		queryAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, queries);
+		searchEditText.setAdapter(queryAdapter);
+		dbHelper.close();
 		
 		webView = (WebView) findViewById(R.id.find_chords_web_view);
 		webView.setWebViewClient(client);
@@ -636,6 +647,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	    return super.onKeyDown(keyCode, event);
 	}	
 
+	@SuppressWarnings("unchecked")
 	private void performSearch() {
 		
 		// dismiss soft keyboard
@@ -647,6 +659,11 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		if (TextUtils.isEmpty(searchText)) {
 			return;
 		}
+		
+		ChordReaderDBHelper dbHelper = new ChordReaderDBHelper(this);
+		dbHelper.saveQuery(searchText.toString());
+		((ArrayAdapter<String>)searchEditText.getAdapter()).insert(searchText.toString(), 0);
+		dbHelper.close();
 		
 		searchText = searchText + " " + getText(R.string.chords_keyword);
 		
