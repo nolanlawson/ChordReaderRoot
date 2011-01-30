@@ -39,7 +39,6 @@
     <string name="transposing">Transposing</string>
     <string name="please_wait">Please wait...</string>
     <string name="loading_title">Loading</string>
-    <string name="sort">Sort</string>
     <string name="sort_az">Sort A-Z</string>
     <string name="sort_by_date">Sort by Date</string>
     
@@ -64,4 +63,21 @@
     <string name="pref_show_ads_summary">Keeping this enabled helps support the developer.</string>
     
     <string name="settings">Settings</string>
+    
+    <string name="pref_first_run">first_run</string>
+    <string name="pref_first_run_title">Reset Introduction</string>
+    <string name="pref_first_run_summary">Show introductory message again.</string>
+    <string name="first_run_title">Welcome to Chord Reader (Beta)!</string>
+    <string name="first_run_message">\
+<b>What\'s new in 0.9.1?</b>\n\
+&#160;&#160;&#160;* Text size setting\n\
+&#160;&#160;&#160;* A-Z file sort\n\
+&#160;&#160;&#160;* Autocomplete in search\n\
+&#160;&#160;&#160;* Capo/transposes auto-saved\n\n\
+Go to <b>Menu → About</b> for full changelog.\n\n\
+<b>Ads can be disabled</b> in the settings (because I\'m a nice guy).\n\n\
+<b>This is a beta release</b>, so please send suggestions to <a href='mailto:nolan@nolanlawson.com'>nolan@nolanlawson.com</a>!
+</string> 
+
+    
 </resources>

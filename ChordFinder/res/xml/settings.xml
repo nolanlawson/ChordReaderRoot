@@ -11,5 +11,10 @@
 		android:title="@string/pref_show_ads_title"
 		android:summary="@string/pref_show_ads_summary"
 		android:persistent="true" android:defaultValue="true"/>
+		
+	<CheckBoxPreference android:key="@string/pref_first_run"
+		android:title="@string/pref_first_run_title"
+		android:summary="@string/pref_first_run_summary"
+		android:persistent="true" android:defaultValue="true"/>	
 
 </PreferenceScreen>

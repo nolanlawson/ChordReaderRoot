@@ -3,6 +3,7 @@ package com.nolanlawson.chordreader.db;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -23,10 +24,16 @@ public class ChordReaderDBHelper extends SQLiteOpenHelper {
 	private static final int DB_VERSION = 1;
 	
 	// table constants
-	private static final String TABLE = "Queries";
+	private static final String TABLE_QUERY = "Queries";
 	private static final String COLUMN_ID = "_id";
 	private static final String COLUMN_QUERY＿TEXT = "query";
 	private static final String COLUMN_QUERY_TIMESTAMP = "timestamp";
+	
+	private static final String TABLE_TRANSPOSITIONS = "Transpositions";
+	private static final String COLUMN_CAPO = "capo";
+	private static final String COLUMN_TRANSPOSE = "transpose";
+	private static final String COLUMN_FILENAME = "filename";
+	
 	
 	// private variables
 	private SQLiteDatabase db;
@@ -40,18 +47,31 @@ public class ChordReaderDBHelper extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		
-		String createSql = "create table %s " +
+		String createFirstTable = "create table %s " +
 			"(" +
 			"%s integer not null primary key autoincrement, " +
 			"%s text not null, " +
 			"%s int not null " +
 			");";
 		
-		createSql = String.format(createSql, TABLE, COLUMN_ID, COLUMN_QUERY＿TEXT, COLUMN_QUERY_TIMESTAMP);
+		createFirstTable = String.format(createFirstTable, TABLE_QUERY, COLUMN_ID, COLUMN_QUERY＿TEXT, COLUMN_QUERY_TIMESTAMP);
 		
-		db.execSQL(createSql);
-		db.execSQL("create unique index index_query on " + TABLE + " ( " + COLUMN_QUERY＿TEXT + ")");
+		db.execSQL(createFirstTable);
+		db.execSQL("create unique index index_query on " + TABLE_QUERY + " ( " + COLUMN_QUERY＿TEXT + ");");
+		
+		String createSecondTable = "create table %s " +
+			"(" +
+			"%s integer not null primary key autoincrement, " +
+			"%s text not null, " +
+			"%s int not null, " +
+			"%s int not null " +
+			");";
+		
+		createSecondTable = String.format(createSecondTable, TABLE_TRANSPOSITIONS, COLUMN_ID, COLUMN_FILENAME, COLUMN_TRANSPOSE, COLUMN_CAPO);
+		db.execSQL(createSecondTable);
+		db.execSQL("create unique index index_filename on " + TABLE_TRANSPOSITIONS + " ( " + COLUMN_FILENAME + ");");
 	}
+	
 
 	@Override
 	public void close() {
@@ -64,14 +84,60 @@ public class ChordReaderDBHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		// TODO Auto-generated method stub
 
 	}
+
+	public Transposition findTranspositionByFilename(CharSequence filename) {
+		synchronized (ChordReaderDBHelper.class) {
+			Cursor cursor = null;
+			try {
+				cursor = db.query(TABLE_TRANSPOSITIONS, 
+						new String[]{COLUMN_ID, COLUMN_FILENAME, COLUMN_TRANSPOSE, COLUMN_CAPO}, 
+						COLUMN_FILENAME + "=?", 
+						new String[]{filename.toString()}, 
+						null, null, null);
+				
+				if (cursor.moveToNext()) {
+					Transposition transposition = new Transposition();
+					
+					transposition.setId(cursor.getInt(0));
+					transposition.setFilename(cursor.getString(1));
+					transposition.setTranspose(cursor.getInt(2));
+					transposition.setCapo(cursor.getInt(3));
+					
+					return transposition;
+				} else {
+					return null;
+				}
+			} finally {
+				cursor.close();
+			}
+		}
+	}
+	
+	public void saveTransposition(CharSequence filename, int transpose, int capo) {
+		synchronized (ChordReaderDBHelper.class) {
+						
+			ContentValues contentValues = new ContentValues();
+			contentValues.put(COLUMN_CAPO, capo);
+			contentValues.put(COLUMN_TRANSPOSE, transpose);
+			
+			int updated = db.update(TABLE_TRANSPOSITIONS, contentValues, COLUMN_FILENAME + "=?", new String[]{filename.toString()});
+			
+			if (updated == 0) { // needs to be inserted
+				String sql = "insert into " + TABLE_TRANSPOSITIONS + " (" + COLUMN_FILENAME + "," + COLUMN_TRANSPOSE + ", " + COLUMN_CAPO
+					+ ") values (?," + transpose + "," + capo + ");";
+			
+				db.execSQL(sql, new String[]{filename.toString()});				
+			}
+		}
+	}
+	
 	
 	public Cursor findAllQueries(long timestamp, CharSequence prefix) {
 		synchronized (ChordReaderDBHelper.class) {
 			Cursor cursor = db.query(
-						TABLE, 
+						TABLE_QUERY, 
 						new String[]{COLUMN_ID, COLUMN_QUERY＿TEXT}, 
 						COLUMN_QUERY_TIMESTAMP + ">" + timestamp + " and " + COLUMN_QUERY＿TEXT +" like ?", 
 						new String[]{prefix + "%"}, 
@@ -87,18 +153,18 @@ public class ChordReaderDBHelper extends SQLiteOpenHelper {
 	public void saveQuery(String queryText) {
 		synchronized (ChordReaderDBHelper.class) {
 			
-			String insertSql = "insert into " + TABLE + " (" + COLUMN_QUERY＿TEXT + ", " + COLUMN_QUERY_TIMESTAMP
-				+ ") values (?," + System.currentTimeMillis() + ")";
-			try {
-				db.execSQL(insertSql, new String[]{queryText});
-			} catch (SQLException ignore) {
-				// unique index exception; we don't care
+			long currentTime = System.currentTimeMillis();
+			
+			ContentValues contentValues = new ContentValues();
+			contentValues.put(COLUMN_QUERY_TIMESTAMP, currentTime);
+			int updated = db.update(TABLE_QUERY, contentValues, COLUMN_QUERY＿TEXT + "=?", new String[]{queryText});
+			
+			if (updated == 0) { // needs to be inserted
+				String insertSql = "insert into " + TABLE_QUERY + " (" + COLUMN_QUERY＿TEXT + ", " + COLUMN_QUERY_TIMESTAMP
+					+ ") values (?," + currentTime + ");";
+				
+				db.execSQL(insertSql, new String[]{queryText});	
 			}
-			
-			String updateSql = "update " + TABLE + " set " + COLUMN_QUERY_TIMESTAMP + " = " + System.currentTimeMillis()
-				+ " where " + COLUMN_QUERY＿TEXT + " = ?";
-			
-			db.execSQL(updateSql,new String[]{queryText});
 		}
 	}
 }

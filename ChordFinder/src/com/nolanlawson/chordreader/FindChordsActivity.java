@@ -71,6 +71,7 @@ import com.nolanlawson.chordreader.chords.regex.ChordInText;
 import com.nolanlawson.chordreader.chords.regex.ChordParser;
 import com.nolanlawson.chordreader.db.ChordReaderDBHelper;
 import com.nolanlawson.chordreader.db.QueryCursorAdapter;
+import com.nolanlawson.chordreader.db.Transposition;
 import com.nolanlawson.chordreader.helper.ChordDictionary;
 import com.nolanlawson.chordreader.helper.DialogHelper;
 import com.nolanlawson.chordreader.helper.PreferenceHelper;
@@ -134,6 +135,8 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
         switchToSearchingMode();
         
         ChordDictionary.initialize(this);
+        
+        showInitialMessage();
     }
     
     @Override
@@ -380,6 +383,13 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	
 	protected void changeTransposeOrCapo(final int newTransposeHalfSteps, final int newCapoFret) {
 		
+		// persist
+		if (filename != null) {
+			ChordReaderDBHelper dbHelper = new ChordReaderDBHelper(this);
+			dbHelper.saveTransposition(filename, newTransposeHalfSteps, newCapoFret);
+			dbHelper.close();
+		}
+		
 		final ProgressDialog progressDialog = new ProgressDialog(this);
 		progressDialog.setTitle(R.string.transposing);
 		progressDialog.setMessage(getText(R.string.please_wait));
@@ -611,6 +621,34 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		builder.show();
 		
 	}	
+	
+    private void showInitialMessage() {
+
+		boolean isFirstRun = PreferenceHelper.getFirstRunPreference(getApplicationContext());
+		if (isFirstRun) {
+			
+			View view = View.inflate(this, R.layout.intro_dialog, null);
+			TextView textView = (TextView) view.findViewById(R.id.first_run_text_view);
+			textView.setMovementMethod(LinkMovementMethod.getInstance());
+			textView.setText(R.string.first_run_message);
+			textView.setLinkTextColor(ColorStateList.valueOf(getResources().getColor(R.color.linkColorBlue)));
+			new AlertDialog.Builder(this)
+					.setTitle(R.string.first_run_title)
+			        .setView(view)
+			        .setPositiveButton(android.R.string.ok,
+						new DialogInterface.OnClickListener() {
+	
+							public void onClick(DialogInterface dialog, int which) {
+								PreferenceHelper.setFirstRunPreference(getApplicationContext(), false);
+							}
+						})
+					.setCancelable(false)
+			        .setIcon(R.drawable.chord_reader_icon).show();
+
+		}
+
+		
+	}
 	
 	private void openFile(String filenameToOpen) {
 		
@@ -957,6 +995,11 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 
 			@Override
 			protected Boolean doInBackground(Void... params) {
+				
+				ChordReaderDBHelper dbHelper = new ChordReaderDBHelper(FindChordsActivity.this);
+				dbHelper.saveTransposition(filename, transposeHalfSteps, capoFret);
+				dbHelper.close();
+				
 				return SaveFileHelper.saveFile(filetext, filename);
 				
 			}
@@ -1307,8 +1350,21 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 
 		chordsInText = null;
-		capoFret = 0;
-		transposeHalfSteps = 0;
+		if (filename != null) {
+			ChordReaderDBHelper dbHelper = new ChordReaderDBHelper(this);
+			Transposition transposition = dbHelper.findTranspositionByFilename(filename);
+			dbHelper.close();
+			if (transposition != null) {
+				capoFret = transposition.getCapo();
+				transposeHalfSteps = transposition.getTranspose();
+			} else {
+				capoFret = 0;
+				transposeHalfSteps = 0;
+			}
+		} else {
+			capoFret = 0;
+			transposeHalfSteps = 0;
+		}
 		
 	}
 

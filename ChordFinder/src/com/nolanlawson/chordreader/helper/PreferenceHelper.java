@@ -2,6 +2,7 @@ package com.nolanlawson.chordreader.helper;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 
 import com.nolanlawson.chordreader.R;
@@ -58,5 +59,24 @@ public class PreferenceHelper {
 		
 		return sharedPrefs.getBoolean(context.getText(R.string.pref_show_ads).toString(), true);
 	}
+	
+
+	public static void setFirstRunPreference(Context context, boolean bool) {
+
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+		Editor editor = sharedPrefs.edit();
+		
+		editor.putBoolean(context.getString(R.string.pref_first_run), bool);
+		
+		editor.commit();
+
+	}
+	public static boolean getFirstRunPreference(Context context) {
+
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+		return sharedPrefs.getBoolean(context.getString(R.string.pref_first_run), true);
+
+	}
+
 	
 }
