@@ -20,7 +20,7 @@
 
 		
 	<item android:id="@+id/menu_open_file" android:title="@string/open_file"
-		android:alphabeticShortcut="@string/open_file" android:icon="@drawable/ic_menu_set_as" />
+		android:alphabeticShortcut="@string/open_file" android:icon="@drawable/ic_menu_upload" />
 
 
 	<item android:id="@+id/menu_manage_files" android:title="@string/manage_saved_files"
