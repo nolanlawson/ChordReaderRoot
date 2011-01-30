@@ -68,41 +68,37 @@ public class ChordReaderDBHelper extends SQLiteOpenHelper {
 
 	}
 	
-	public List<String> findAllQueriesAfter(long timestamp) {
-		Cursor cursor = null;
-		try {
-			cursor = db.query(
-					TABLE, 
-					new String[]{COLUMN_QUERY＿TEXT}, 
-					COLUMN_QUERY_TIMESTAMP + ">" + timestamp, 
-					null, null, null, 
-					COLUMN_QUERY_TIMESTAMP + " desc");
-			
-			List<String> result = new ArrayList<String>();
-			while (cursor.moveToNext()) {
-				result.add(cursor.getString(0));
-			}
-			return result;
-		} finally {
-			if (cursor != null) {
-				cursor.close();
-			}
+	public Cursor findAllQueries(long timestamp, CharSequence prefix) {
+		synchronized (ChordReaderDBHelper.class) {
+			Cursor cursor = db.query(
+						TABLE, 
+						new String[]{COLUMN_ID, COLUMN_QUERY＿TEXT}, 
+						COLUMN_QUERY_TIMESTAMP + ">" + timestamp + " and " + COLUMN_QUERY＿TEXT +" like ?", 
+						new String[]{prefix + "%"}, 
+						null, 
+						null, 
+						COLUMN_QUERY_TIMESTAMP + " desc");
+				
+			return cursor;
 		}
+
 	}
 	
 	public void saveQuery(String queryText) {
-		
-		String insertSql = "insert into " + TABLE + " (" + COLUMN_QUERY＿TEXT + ", " + COLUMN_QUERY_TIMESTAMP
-			+ ") values (?," + System.currentTimeMillis() + ")";
-		try {
-			db.execSQL(insertSql, new String[]{queryText});
-		} catch (SQLException ignore) {
-			// unique index exception; we don't care
+		synchronized (ChordReaderDBHelper.class) {
+			
+			String insertSql = "insert into " + TABLE + " (" + COLUMN_QUERY＿TEXT + ", " + COLUMN_QUERY_TIMESTAMP
+				+ ") values (?," + System.currentTimeMillis() + ")";
+			try {
+				db.execSQL(insertSql, new String[]{queryText});
+			} catch (SQLException ignore) {
+				// unique index exception; we don't care
+			}
+			
+			String updateSql = "update " + TABLE + " set " + COLUMN_QUERY_TIMESTAMP + " = " + System.currentTimeMillis()
+				+ " where " + COLUMN_QUERY＿TEXT + " = ?";
+			
+			db.execSQL(updateSql,new String[]{queryText});
 		}
-		
-		String updateSql = "update " + TABLE + " set " + COLUMN_QUERY_TIMESTAMP + " = " + System.currentTimeMillis()
-			+ " where " + COLUMN_QUERY＿TEXT + " = ?";
-		
-		db.execSQL(updateSql,new String[]{queryText});
 	}
 }

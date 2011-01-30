@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -66,6 +67,7 @@ import com.nolanlawson.chordreader.adapter.FileAdapter;
 import com.nolanlawson.chordreader.chords.regex.ChordInText;
 import com.nolanlawson.chordreader.chords.regex.ChordParser;
 import com.nolanlawson.chordreader.db.ChordReaderDBHelper;
+import com.nolanlawson.chordreader.db.QueryCursorAdapter;
 import com.nolanlawson.chordreader.helper.ChordDictionary;
 import com.nolanlawson.chordreader.helper.DialogHelper;
 import com.nolanlawson.chordreader.helper.PreferenceHelper;
@@ -110,7 +112,6 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	private ScrollView viewingScrollView;
 	private AdView adView;
 	private LinearLayout mainView;
-	private ArrayAdapter<String> queryAdapter;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -135,6 +136,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
     public void onDestroy() {
     	
     	super.onDestroy();
+    	((QueryCursorAdapter)searchEditText.getAdapter()).destroy();
     }
 
 
@@ -263,11 +265,14 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		searchEditText.setOnEditorActionListener(this);
 		searchEditText.addTextChangedListener(this);
 		
+		
+		long queryLimit = System.currentTimeMillis() - HISTORY_WINDOW;
 		ChordReaderDBHelper dbHelper = new ChordReaderDBHelper(this);
-		List<String> queries = dbHelper.findAllQueriesAfter(System.currentTimeMillis() - HISTORY_WINDOW);
-		queryAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, queries);
-		searchEditText.setAdapter(queryAdapter);
+		Cursor cursor = dbHelper.findAllQueries(queryLimit, "");
 		dbHelper.close();
+		QueryCursorAdapter adapter = new QueryCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, queryLimit, cursor);
+		
+		searchEditText.setAdapter(adapter);
 		
 		webView = (WebView) findViewById(R.id.find_chords_web_view);
 		webView.setWebViewClient(client);
@@ -594,7 +599,8 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	
     public void showHTML(String html) { 
     	
-    	log.d("html is %s", html);
+
+    	log.d("html is %s...", html != null ? (html.substring(0, Math.min(html.length(),30))) : html);
     	
 		this.html = html;
 
@@ -647,7 +653,6 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	    return super.onKeyDown(keyCode, event);
 	}	
 
-	@SuppressWarnings("unchecked")
 	private void performSearch() {
 		
 		// dismiss soft keyboard
@@ -662,7 +667,6 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 		ChordReaderDBHelper dbHelper = new ChordReaderDBHelper(this);
 		dbHelper.saveQuery(searchText.toString());
-		((ArrayAdapter<String>)searchEditText.getAdapter()).insert(searchText.toString(), 0);
 		dbHelper.close();
 		
 		searchText = searchText + " " + getText(R.string.chords_keyword);
@@ -1309,6 +1313,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		@Override
 		public void onPageFinished(WebView view, String url) {
 			super.onPageFinished(view, url);
+			log.d("onPageFinished()　" + url);
 			urlLoaded(url);
 			
 
@@ -1322,6 +1327,8 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 			urlLoading(url);
 			
 		}
+		
+		
 	}
 
 	@Override
