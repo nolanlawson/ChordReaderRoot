@@ -305,7 +305,9 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		searchingView = findViewById(R.id.find_chords_finding_view);
 		
 		
-		AdManager.setTestDevices(new String[] { AdManager.TEST_EMULATOR, "1C7A94DAADBF54DB8F7990E3EE1BBD76" });        
+		if (UtilLogger.DEBUG_MODE) {
+			AdManager.setTestDevices(new String[] { AdManager.TEST_EMULATOR, "1C7A94DAADBF54DB8F7990E3EE1BBD76" });        
+		}
 		adView = (AdView) findViewById(R.id.ad);
 		adView.setAdListener(this);
 		adView.setVisibility(PreferenceHelper.getShowAds(this) ? View.VISIBLE : View.GONE);

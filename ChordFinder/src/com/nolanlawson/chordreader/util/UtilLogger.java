@@ -24,34 +24,34 @@ public class UtilLogger {
 	
 	public void i(String format, Object... more) {
 		if (DEBUG_MODE) {
-			Log.i(tag, String.format(format, more));
+			Log.i(tag, smartFormat(format,more));
 		}
 	}
 	
 	public void i(Exception e, String format, Object... more) {
 		if (DEBUG_MODE) {
-			Log.i(tag, String.format(format, more), e);
+			Log.i(tag, smartFormat(format,more), e);
 		}
 	}
 	
 	public void w(Exception e, String format, Object... more) {
 		if (DEBUG_MODE) {
-			Log.w(tag, String.format(format, more), e);
+			Log.w(tag, smartFormat(format,more), e);
 		}
 	}
 	
 	public void w(String format, Object... more) {
 		if (DEBUG_MODE) {
-			Log.w(tag, String.format(format, more));
+			Log.w(tag, smartFormat(format,more));
 		}
 	}	
 	
 	public void e(String format, Object... more) {
-		Log.e(tag, String.format(format, more));
+		Log.e(tag, smartFormat(format,more));
 	}	
 	
 	public void e(Exception e, String format, Object... more) {
-		Log.e(tag, String.format(format, more), e);
+		Log.e(tag, smartFormat(format,more), e);
 	}
 	
 	public void d(String format, Object... more) {	
@@ -63,7 +63,7 @@ public class UtilLogger {
 					more[i] = Arrays.toString((String[])more[i]);
 				}
 			}
-			Log.d(tag, String.format(format, more));
+			Log.d(tag, smartFormat(format,more));
 		}
 	}	
 	
@@ -76,7 +76,11 @@ public class UtilLogger {
 					more[i] = Arrays.toString((String[])more[i]);
 				}
 			}
-			Log.d(tag, String.format(format, more), e);
+			Log.d(tag, smartFormat(format,more), e);
 		}
 	}	
+	
+	private static String smartFormat(String format, Object... more) {
+		return more.length > 0 ? String.format(format, more) : format;
+	}
 }

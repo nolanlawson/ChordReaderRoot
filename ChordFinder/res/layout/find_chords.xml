@@ -50,7 +50,7 @@
 			<AutoCompleteTextView android:layout_width="0px" android:layout_weight="1.0"
 				android:layout_height="wrap_content" android:singleLine="true"
 				android:hint="@string/chord_search_hint" android:id="@+id/find_chords_edit_text"
-				android:imeOptions="actionSearch" />
+				android:imeOptions="actionSearch" android:completionThreshold="1"/>
 			<Button android:layout_width="wrap_content"
 				android:layout_height="wrap_content" android:id="@+id/find_chords_search_button"
 				android:drawableLeft="@drawable/ic_btn_search" android:visibility="gone" />
@@ -80,5 +80,5 @@
 		android:visibility="visible" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" app:backgroundColor="#000000"
 		app:primaryTextColor="#FFFFFF" app:secondaryTextColor="#CCCCCC"
-		app:keywords="chord chords guitar tab" app:refreshInterval="30" />
+		app:keywords="chord chords guitar tab tabs guitarist" app:refreshInterval="30" />
 </LinearLayout>
