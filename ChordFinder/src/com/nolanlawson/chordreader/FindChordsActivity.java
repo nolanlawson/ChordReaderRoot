@@ -84,7 +84,7 @@ import com.nolanlawson.chordreader.util.UtilLogger;
 public class FindChordsActivity extends Activity implements AdListener, OnEditorActionListener, OnClickListener, TextWatcher, OnTouchListener {
 
 	private static final int PROGRESS_DIALOG_MIN_TIME = 600;
-	private static final long AD_DISMISS_TIME = 10000;
+	private static final long AD_DISMISS_TIME = 7000;
 	private static final long HISTORY_WINDOW = TimeUnit.SECONDS.toMillis(60 * 60 * 24 * 360); // about one year 
 	private static final long PAGE_WAIT_TIME = 3000;
 	
