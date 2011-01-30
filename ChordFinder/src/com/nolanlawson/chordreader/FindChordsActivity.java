@@ -266,6 +266,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		searchEditText = (AutoCompleteTextView) findViewById(R.id.find_chords_edit_text);
 		searchEditText.setOnEditorActionListener(this);
 		searchEditText.addTextChangedListener(this);
+		searchEditText.setOnClickListener(this);
 		
 		
 		long queryLimit = System.currentTimeMillis() - HISTORY_WINDOW;
@@ -795,6 +796,12 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 			break;
 		case R.id.find_chords_message_secondary_view:
 			analyzeHtml();
+			break;
+		case R.id.find_chords_edit_text:
+			// I think it's intuitive to select the whole text when you click here
+			if (!TextUtils.isEmpty(searchEditText.getText())) {
+				searchEditText.setSelection(0, searchEditText.getText().length());
+			}
 			break;
 		}
 		
