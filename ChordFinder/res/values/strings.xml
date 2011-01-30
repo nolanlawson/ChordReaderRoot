@@ -58,7 +58,7 @@
     
     <string name="pref_show_ads">show_ads</string>
     <string name="pref_show_ads_title">Show Ads</string>
-    <string name="pref_show_ads_summary">You can disable this if you really want.</string>
+    <string name="pref_show_ads_summary">Keeping this enabled helps support the developer.</string>
     
     <string name="settings">Settings</string>
 </resources>

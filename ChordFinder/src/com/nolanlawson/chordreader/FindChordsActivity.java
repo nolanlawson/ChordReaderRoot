@@ -39,6 +39,9 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.Animation.AnimationListener;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
@@ -47,11 +50,16 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.TextView.OnEditorActionListener;
 
+import com.admob.android.ads.AdListener;
+import com.admob.android.ads.AdManager;
+import com.admob.android.ads.AdView;
 import com.nolanlawson.chordreader.adapter.FileAdapter;
 import com.nolanlawson.chordreader.chords.regex.ChordInText;
 import com.nolanlawson.chordreader.chords.regex.ChordParser;
@@ -64,9 +72,10 @@ import com.nolanlawson.chordreader.helper.WebPageExtractionHelper;
 import com.nolanlawson.chordreader.util.Pair;
 import com.nolanlawson.chordreader.util.UtilLogger;
 
-public class FindChordsActivity extends Activity implements OnEditorActionListener, OnClickListener, TextWatcher, OnTouchListener {
+public class FindChordsActivity extends Activity implements AdListener, OnEditorActionListener, OnClickListener, TextWatcher, OnTouchListener {
 
 	private static final int PROGRESS_DIALOG_MIN_TIME = 600;
+	private static final int AD_DISMISS_TIME = 10000;
 	
 	private static UtilLogger log = new UtilLogger(FindChordsActivity.class);
 	
@@ -94,6 +103,9 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 	private int transposeHalfSteps = 0;
 	
 	private TextView viewingTextView;
+	private ScrollView viewingScrollView;
+	private AdView adView;
+	private LinearLayout mainView;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -258,11 +270,20 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		messageTextView = (TextView) findViewById(R.id.find_chords_message_text_view);
 		
 		viewingTextView = (TextView) findViewById(R.id.find_chords_viewing_text_view);
-		viewingTextView.setOnTouchListener(this);
 		viewingTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, PreferenceHelper.getTextSizePreference(this));
+		viewingScrollView = (ScrollView) findViewById(R.id.find_chords_viewing_scroll_view);
+		viewingScrollView.setVisibility(View.GONE);
 		
 		searchingView = findViewById(R.id.find_chords_finding_view);
 		
+		
+		AdManager.setTestDevices(new String[] { AdManager.TEST_EMULATOR, "1C7A94DAADBF54DB8F7990E3EE1BBD76" });        
+		adView = (AdView) findViewById(R.id.ad);
+		adView.setAdListener(this);
+		
+		mainView = (LinearLayout) findViewById(R.id.find_chords_main_view);
+		
+		mainView.setOnTouchListener(this);
 	}
 
 	
@@ -1045,6 +1066,8 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 				
 				progressDialog.dismiss();
 				
+				dismissAdsAfterAwhile();
+				
 			}
 			
 		};
@@ -1052,6 +1075,59 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		task.execute((Void)null);
 			
 		
+	}
+	
+	private void dismissAdsAfterAwhile() {
+		// gracefully dismiss the ad after the user has looked at the chords for a few seconds
+		
+		adView.setVisibility(View.VISIBLE);
+		adView.requestFreshAd();
+		
+		AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+			
+			@Override
+			protected Void doInBackground(Void... params) {
+				
+				try {
+					Thread.sleep(AD_DISMISS_TIME);
+				} catch (InterruptedException e) {
+					log.e(e, "unexpected exception");
+				}
+				
+				return null;
+			}
+
+			@Override
+			protected void onPostExecute(Void result) {
+				super.onPostExecute(result);
+				Animation animation = AnimationUtils.loadAnimation(FindChordsActivity.this, R.anim.slide_top_to_bottom);
+				adView.setAnimation(animation);
+				animation.setAnimationListener(new AnimationListener() {
+					
+					@Override
+					public void onAnimationStart(Animation animation) {
+					}
+					
+					@Override
+					public void onAnimationRepeat(Animation animation) {
+					}
+					
+					@Override
+					public void onAnimationEnd(Animation animation) {
+						runOnUiThread(new Runnable(){
+
+							@Override
+							public void run() {
+								adView.setVisibility(View.GONE);
+								
+							}
+						});
+					}
+				});
+				adView.startAnimation(animation);
+			}
+		};
+		task.execute((Void)null);
 	}
 
 	private void applyLinkifiedChordsTextToTextView(Spannable newText) {
@@ -1132,7 +1208,7 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		resetDataExceptChordTextAndFilename();
 		
 		searchingView.setVisibility(View.GONE);
-		viewingTextView.setVisibility(View.VISIBLE);
+		viewingScrollView.setVisibility(View.VISIBLE);
 		
 		analyzeChordsAndShowInitialChordView();
 		
@@ -1148,7 +1224,9 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		resetData();
 		
 		searchingView.setVisibility(View.VISIBLE);
-		viewingTextView.setVisibility(View.GONE);
+		viewingScrollView.setVisibility(View.GONE);
+		adView.setVisibility(View.VISIBLE);
+		adView.requestFreshAd();
 	}
 
 	private void resetData() {
@@ -1173,8 +1251,8 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 		// record where the user touched so we know where to place the window, so it will be out of the way
 		
-		ChordLinkClickedActivity.lastXRelativeCoordinate = event.getX() / viewingTextView.getWidth();
-		ChordLinkClickedActivity.lastYRelativeCoordinate = event.getY() / viewingTextView.getHeight();
+		ChordLinkClickedActivity.lastXRelativeCoordinate = event.getX() / mainView.getWidth();
+		ChordLinkClickedActivity.lastYRelativeCoordinate = event.getY() / mainView.getHeight();
 		
 		return false;
 	}
@@ -1211,10 +1289,25 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 			urlLoading(url);
 			
 		}
-		
-		
-		
-		
-		
+	}
+
+	@Override
+	public void onFailedToReceiveAd(AdView arg0) {
+		log.d("onFailedToReceiveAd()");
+	}
+
+	@Override
+	public void onFailedToReceiveRefreshedAd(AdView arg0) {
+		log.d("onFailedToReceiveRefreshedAd()");		
+	}
+
+	@Override
+	public void onReceiveAd(AdView arg0) {
+		log.d("onReceiveAd()");		
+	}
+
+	@Override
+	public void onReceiveRefreshedAd(AdView arg0) {
+		log.d("onReceiveRefreshedAd()");		
 	}
 }

@@ -10,7 +10,7 @@ import android.util.Log;
  */
 public class UtilLogger {
 
-	public static final boolean DEBUG_MODE = false;
+	public static final boolean DEBUG_MODE = true;
 	
 	private String tag;
 	
@@ -23,19 +23,27 @@ public class UtilLogger {
 	}
 	
 	public void i(String format, Object... more) {
-		Log.i(tag, String.format(format, more));
+		if (DEBUG_MODE) {
+			Log.i(tag, String.format(format, more));
+		}
 	}
 	
 	public void i(Exception e, String format, Object... more) {
-		Log.i(tag, String.format(format, more), e);
+		if (DEBUG_MODE) {
+			Log.i(tag, String.format(format, more), e);
+		}
 	}
 	
 	public void w(Exception e, String format, Object... more) {
-		Log.w(tag, String.format(format, more), e);
+		if (DEBUG_MODE) {
+			Log.w(tag, String.format(format, more), e);
+		}
 	}
 	
 	public void w(String format, Object... more) {
-		Log.w(tag, String.format(format, more));
+		if (DEBUG_MODE) {
+			Log.w(tag, String.format(format, more));
+		}
 	}	
 	
 	public void e(String format, Object... more) {
