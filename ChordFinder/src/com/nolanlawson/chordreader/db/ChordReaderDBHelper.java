@@ -1,12 +1,8 @@
 package com.nolanlawson.chordreader.db;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -26,7 +22,7 @@ public class ChordReaderDBHelper extends SQLiteOpenHelper {
 	// table constants
 	private static final String TABLE_QUERY = "Queries";
 	private static final String COLUMN_ID = "_id";
-	private static final String COLUMN_QUERY＿TEXT = "query";
+	private static final String COLUMN_QUERY_TEXT = "query";
 	private static final String COLUMN_QUERY_TIMESTAMP = "timestamp";
 	
 	private static final String TABLE_TRANSPOSITIONS = "Transpositions";
@@ -54,10 +50,10 @@ public class ChordReaderDBHelper extends SQLiteOpenHelper {
 			"%s int not null " +
 			");";
 		
-		createFirstTable = String.format(createFirstTable, TABLE_QUERY, COLUMN_ID, COLUMN_QUERY＿TEXT, COLUMN_QUERY_TIMESTAMP);
+		createFirstTable = String.format(createFirstTable, TABLE_QUERY, COLUMN_ID, COLUMN_QUERY_TEXT, COLUMN_QUERY_TIMESTAMP);
 		
 		db.execSQL(createFirstTable);
-		db.execSQL("create unique index index_query on " + TABLE_QUERY + " ( " + COLUMN_QUERY＿TEXT + ");");
+		db.execSQL("create unique index index_query on " + TABLE_QUERY + " ( " + COLUMN_QUERY_TEXT + ");");
 		
 		String createSecondTable = "create table %s " +
 			"(" +
@@ -138,8 +134,8 @@ public class ChordReaderDBHelper extends SQLiteOpenHelper {
 		synchronized (ChordReaderDBHelper.class) {
 			Cursor cursor = db.query(
 						TABLE_QUERY, 
-						new String[]{COLUMN_ID, COLUMN_QUERY＿TEXT}, 
-						COLUMN_QUERY_TIMESTAMP + ">" + timestamp + " and " + COLUMN_QUERY＿TEXT +" like ?", 
+						new String[]{COLUMN_ID, COLUMN_QUERY_TEXT}, 
+						COLUMN_QUERY_TIMESTAMP + ">" + timestamp + " and " + COLUMN_QUERY_TEXT +" like ?", 
 						new String[]{prefix + "%"}, 
 						null, 
 						null, 
@@ -157,10 +153,10 @@ public class ChordReaderDBHelper extends SQLiteOpenHelper {
 			
 			ContentValues contentValues = new ContentValues();
 			contentValues.put(COLUMN_QUERY_TIMESTAMP, currentTime);
-			int updated = db.update(TABLE_QUERY, contentValues, COLUMN_QUERY＿TEXT + "=?", new String[]{queryText});
+			int updated = db.update(TABLE_QUERY, contentValues, COLUMN_QUERY_TEXT + "=?", new String[]{queryText});
 			
 			if (updated == 0) { // needs to be inserted
-				String insertSql = "insert into " + TABLE_QUERY + " (" + COLUMN_QUERY＿TEXT + ", " + COLUMN_QUERY_TIMESTAMP
+				String insertSql = "insert into " + TABLE_QUERY + " (" + COLUMN_QUERY_TEXT + ", " + COLUMN_QUERY_TIMESTAMP
 					+ ") values (?," + currentTime + ");";
 				
 				db.execSQL(insertSql, new String[]{queryText});	
