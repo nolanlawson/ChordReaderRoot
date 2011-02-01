@@ -328,7 +328,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 		mainView = (LinearLayout) findViewById(R.id.find_chords_main_view);
 		
-		mainView.setOnTouchListener(this);
+		viewingTextView.setOnTouchListener(this);
 	}
 
 	
