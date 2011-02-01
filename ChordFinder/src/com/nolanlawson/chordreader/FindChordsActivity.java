@@ -11,8 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.app.AlertDialog.Builder;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -34,6 +34,7 @@ import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.URLSpan;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -41,12 +42,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.view.WindowManager;
 import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
@@ -60,8 +61,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 
 import com.admob.android.ads.AdListener;
 import com.admob.android.ads.AdManager;
@@ -1380,8 +1381,10 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 		// record where the user touched so we know where to place the window, so it will be out of the way
 		
-		ChordLinkClickedActivity.lastXRelativeCoordinate = event.getX() / mainView.getWidth();
-		ChordLinkClickedActivity.lastYRelativeCoordinate = event.getY() / mainView.getHeight();
+		Display display = getWindowManager().getDefaultDisplay();
+		
+		ChordLinkClickedActivity.lastXRelativeCoordinate = event.getRawX() / display.getWidth();
+		ChordLinkClickedActivity.lastYRelativeCoordinate = event.getRawY() / display.getHeight();
 		
 		return false;
 	}
