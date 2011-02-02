@@ -1,9 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
  <selector xmlns:android="http://schemas.android.com/apk/res/android">
-     <item android:state_focused="false" android:state_pressed="false"
-           android:drawable="@drawable/background_light" /> <!-- unfocused --> 
-     <item android:state_pressed="true"
-           android:drawable="@drawable/shape1" /> <!-- pressed -->
-     <item android:state_focused="true"
-           android:drawable="@drawable/shape1" /> <!-- focused -->
+ 
+     <item android:state_focused="false" android:state_pressed="false">
+     
+	      <shape xmlns:android="http://schemas.android.com/apk/res/android">
+		     <gradient
+		         android:startColor="@color/scheme_dark_bubble"
+		         android:endColor="@color/scheme_dark_bubble"
+		         android:angle="270" />
+		     <corners
+		         android:radius="3dp" />
+		     <padding
+		         android:left="2dp"
+		         android:top="2dp"
+		         android:right="2dp"
+		         android:bottom="2dp" />
+	 	</shape>
+     </item>
+     
+     <item android:state_pressed="true">
+           
+	     <shape xmlns:android="http://schemas.android.com/apk/res/android">
+		     <gradient
+		         android:startColor="@color/yellow2"
+		         android:endColor="@color/yellow1"
+		         android:angle="270" />
+		     <corners
+		         android:radius="3dp" />
+		     <padding
+		         android:left="2dp"
+		         android:top="2dp"
+		         android:right="2dp"
+		         android:bottom="2dp" />
+	 	</shape>
+           
+	</item>
+           
+     <item android:state_focused="true">       
+     	<shape xmlns:android="http://schemas.android.com/apk/res/android">
+		    <gradient
+		         android:startColor="@color/orange2"
+		         android:endColor="@color/orange1"
+		        android:angle="270" />
+		    <corners
+		        android:radius="3dp" />
+		    <padding
+		        android:left="2dp"
+		        android:top="2dp"
+		        android:right="2dp"
+		        android:bottom="2dp" />
+ 		</shape>
+ 	</item>
  </selector>
