@@ -1432,6 +1432,8 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		mainView.setBackgroundColor(colorScheme.getBackgroundColor(this));
 		viewingTextView.setLinkTextColor(ColorStateList.valueOf(colorScheme.getLinkColor(this)));
 		
+		messageSecondaryView.setBackgroundResource(colorScheme.getSelectorResource());
+		
 	}
 	
 	private class CustomWebViewClient extends WebViewClient {
