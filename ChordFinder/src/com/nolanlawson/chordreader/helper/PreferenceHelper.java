@@ -6,11 +6,13 @@ import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 
 import com.nolanlawson.chordreader.R;
+import com.nolanlawson.chordreader.data.ColorScheme;
 import com.nolanlawson.chordreader.util.UtilLogger;
 
 public class PreferenceHelper {
 	
 	private static float textSize = -1;
+	private static ColorScheme colorScheme = null;
 	
 	private static UtilLogger log = new UtilLogger(PreferenceHelper.class);
 		
@@ -43,6 +45,7 @@ public class PreferenceHelper {
 	
 	public static void clearCache() {
 		textSize = -1;
+		colorScheme = null;
 	}
 	
 	private static void cacheTextsize(Context context, int dimenId) {
@@ -76,6 +79,34 @@ public class PreferenceHelper {
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
 		return sharedPrefs.getBoolean(context.getString(R.string.pref_first_run), true);
 
+	}
+	
+	public static ColorScheme getColorScheme(Context context) {
+		
+		if (colorScheme == null) {
+		
+			SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+			String colorSchemeName = sharedPrefs.getString(
+					context.getText(R.string.pref_scheme).toString(), 
+					context.getText(ColorScheme.Dark.getNameResource()).toString());
+			
+			colorScheme = ColorScheme.findByPreferenceName(colorSchemeName, context);
+		}
+		
+		return colorScheme;
+		
+	}
+		
+	public static void setColorScheme(Context context, ColorScheme colorScheme) {
+		
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+		Editor editor = sharedPrefs.edit();
+		
+		editor.putString(context.getString(R.string.pref_scheme).toString(), 
+				context.getText(colorScheme.getNameResource()).toString());
+		
+		editor.commit();
+		
 	}
 
 	

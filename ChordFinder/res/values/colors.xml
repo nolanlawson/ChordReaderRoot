@@ -2,6 +2,17 @@
 
 	<color name="darkGray">#FF333333</color>
 	<color name="linkColorBlue">#0099dd</color>
-
+	
+	<color name="scheme_dark_foreground">@android:color/darker_gray</color>
+	<color name="scheme_dark_background">@android:color/background_dark</color>
+	<color name="scheme_dark_bubble">#FF333333</color>
+	<color name="scheme_dark_link">#0099dd</color>
+	
+	<color name="scheme_light_foreground">@android:color/primary_text_light_nodisable</color>
+	<color name="scheme_light_background">@android:color/background_light</color>
+	<color name="scheme_light_bubble">#330000BB</color>
+	<color name="scheme_light_link">#0099dd</color>
+	
+	<color name="invisible">#00000000</color>
 	
 </resources>

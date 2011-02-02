@@ -1,5 +1,8 @@
 package com.nolanlawson.chordreader;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -8,6 +11,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -19,6 +25,8 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -70,6 +78,7 @@ import com.admob.android.ads.AdView;
 import com.nolanlawson.chordreader.adapter.FileAdapter;
 import com.nolanlawson.chordreader.chords.regex.ChordInText;
 import com.nolanlawson.chordreader.chords.regex.ChordParser;
+import com.nolanlawson.chordreader.data.ColorScheme;
 import com.nolanlawson.chordreader.db.ChordReaderDBHelper;
 import com.nolanlawson.chordreader.db.QueryCursorAdapter;
 import com.nolanlawson.chordreader.db.Transposition;
@@ -136,6 +145,8 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
         switchToSearchingMode();
         
         ChordDictionary.initialize(this);
+        
+        applyColorScheme();
         
         showInitialMessage();
     }
@@ -215,6 +226,9 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 			// in search mode and ads are visible
 			adView.setVisibility(View.VISIBLE);
 		}
+		
+		// reapply color scheme
+		applyColorScheme();
 		
 		
 	}
@@ -1407,6 +1421,17 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	@Override
 	public void onReceiveRefreshedAd(AdView arg0) {
 		log.d("onReceiveRefreshedAd()");		
+	}
+	
+	private void applyColorScheme() {
+		
+		ColorScheme colorScheme = PreferenceHelper.getColorScheme(this);
+		
+		messageTextView.setTextColor(colorScheme.getForegroundColor(this));
+		viewingTextView.setTextColor(colorScheme.getForegroundColor(this));
+		mainView.setBackgroundColor(colorScheme.getBackgroundColor(this));
+		viewingTextView.setLinkTextColor(ColorStateList.valueOf(colorScheme.getLinkColor(this)));
+		
 	}
 	
 	private class CustomWebViewClient extends WebViewClient {

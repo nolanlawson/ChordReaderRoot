@@ -14,4 +14,9 @@
 		<item>@string/text_size_large_name</item>
 		<item>@string/text_size_xlarge_name</item>
 	</string-array>
+	
+	<string-array name="color_schemes">
+		<item>@string/pref_scheme_dark</item>
+		<item>@string/pref_scheme_light</item>
+	</string-array>
 </resources>

@@ -2,20 +2,21 @@ package com.nolanlawson.chordreader;
 
 import java.util.Arrays;
 
-import com.nolanlawson.chordreader.helper.PreferenceHelper;
-
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
-import android.preference.PreferenceActivity;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.PreferenceActivity;
 import android.view.KeyEvent;
+
+import com.nolanlawson.chordreader.helper.PreferenceHelper;
 
 public class SettingsActivity extends PreferenceActivity implements OnPreferenceChangeListener{
 	
 	private ListPreference textSizePreference;
 	private CheckBoxPreference showAdsPreference;
+	private ListPreference themePreference;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +40,13 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
 		
 		showAdsPreference.setOnPreferenceChangeListener(this);
 		
+		themePreference = (ListPreference) findPreference(getText(R.string.pref_scheme));
 		
+		themePreference.setOnPreferenceChangeListener(this);
+		
+		CharSequence themeSummary = getText(PreferenceHelper.getColorScheme(this).getNameResource());
+		
+		themePreference.setSummary(themeSummary);
 		
 	}
 	
@@ -53,6 +60,9 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
 			
 			textSizePreference.setSummary(newEntry);
 			return true;
+		} else if (preference.getKey().equals(getText(R.string.pref_scheme))) {
+			themePreference.setSummary(newValue.toString());
+			return true;	
 		} else { // show ads
 			// TODO
 			return true;

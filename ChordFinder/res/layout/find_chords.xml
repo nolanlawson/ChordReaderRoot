@@ -15,8 +15,7 @@
 			android:paddingTop="5dp" android:paddingBottom="5dp"
 			android:id="@+id/find_chords_message_main_view">
 
-			<LinearLayout android:layout_width="0px"
-				android:layout_weight="1.0" android:layout_height="wrap_content"
+			<LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content"
 				android:orientation="horizontal" android:gravity="center_vertical|center_horizontal"
 				android:background="@drawable/app_selector" android:selectable="true"
 				android:clickable="true" android:focusable="true" android:padding="5dp"
