@@ -5,8 +5,8 @@
      
 	      <shape xmlns:android="http://schemas.android.com/apk/res/android">
 		     <gradient
-		         android:startColor="@color/scheme_light_bubble"
-		         android:endColor="@color/scheme_light_bubble"
+		         android:startColor="@color/scheme_android_bubble"
+		         android:endColor="@color/scheme_android_bubble"
 		         android:angle="270" />
 		     <corners
 		         android:radius="3dp" />
@@ -17,6 +17,7 @@
 		         android:bottom="2dp" />
 	 	</shape>
      </item>
+     
      <item android:state_pressed="true" android:drawable="@drawable/pressed_shape"/>
            
      <item android:state_focused="true" android:drawable="@drawable/focused_shape"/>

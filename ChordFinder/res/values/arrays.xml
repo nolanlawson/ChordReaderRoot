@@ -18,5 +18,6 @@
 	<string-array name="color_schemes">
 		<item>@string/pref_scheme_dark</item>
 		<item>@string/pref_scheme_light</item>
+		<item>@string/pref_scheme_android</item>
 	</string-array>
 </resources>

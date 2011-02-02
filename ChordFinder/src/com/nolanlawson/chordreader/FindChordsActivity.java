@@ -1262,7 +1262,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 		viewingTextView.setMovementMethod(LinkMovementMethod.getInstance());
 		viewingTextView.setText(newText);
-		viewingTextView.setLinkTextColor(ColorStateList.valueOf(getResources().getColor(R.color.linkColorBlue)));
+
 		
 		
 	}

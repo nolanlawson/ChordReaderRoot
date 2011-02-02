@@ -18,4 +18,10 @@
 	<color name="scheme_light_bubble">#330000BB</color>
 	<color name="scheme_light_link">#0099dd</color>
 	
+	
+	<color name="scheme_android_bubble">#33000000</color>
+	<color name="scheme_android_background">#FFA4C639</color>
+	<color name="scheme_android_foreground">@android:color/black</color>
+	<color name="scheme_android_link">#FF007799</color>
+	
 </resources>

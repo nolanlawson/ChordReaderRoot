@@ -17,6 +17,9 @@ public enum ColorScheme {
 	Light (R.string.pref_scheme_light, R.color.scheme_light_background, 
 			R.color.scheme_light_foreground, R.color.scheme_light_bubble, R.color.scheme_light_link,
 			R.drawable.app_selector_light),
+	Android (R.string.pref_scheme_android, R.color.scheme_android_background, 
+			R.color.scheme_android_foreground, R.color.scheme_android_bubble, R.color.scheme_android_link,
+			R.drawable.app_selector_android),
 	;
 	
 	private int nameResource;

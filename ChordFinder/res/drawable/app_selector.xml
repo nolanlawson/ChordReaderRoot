@@ -18,37 +18,7 @@
 	 	</shape>
      </item>
      
-     <item android:state_pressed="true">
+     <item android:state_pressed="true" android:drawable="@drawable/pressed_shape"/>
            
-	     <shape xmlns:android="http://schemas.android.com/apk/res/android">
-		     <gradient
-		         android:startColor="@color/yellow2"
-		         android:endColor="@color/yellow1"
-		         android:angle="270" />
-		     <corners
-		         android:radius="3dp" />
-		     <padding
-		         android:left="2dp"
-		         android:top="2dp"
-		         android:right="2dp"
-		         android:bottom="2dp" />
-	 	</shape>
-           
-	</item>
-           
-     <item android:state_focused="true">       
-     	<shape xmlns:android="http://schemas.android.com/apk/res/android">
-		    <gradient
-		         android:startColor="@color/orange2"
-		         android:endColor="@color/orange1"
-		        android:angle="270" />
-		    <corners
-		        android:radius="3dp" />
-		    <padding
-		        android:left="2dp"
-		        android:top="2dp"
-		        android:right="2dp"
-		        android:bottom="2dp" />
- 		</shape>
- 	</item>
+     <item android:state_focused="true" android:drawable="@drawable/focused_shape"/>
  </selector>
