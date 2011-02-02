@@ -42,6 +42,7 @@
     <string name="sort_az">Sort A-Z</string>
     <string name="sort_by_date">Sort by Date</string>
     <string name="edit">Edit</string>
+    <string name="edit_chords">Edit Chords</string>
     
 	<string name="pref_text_size">text_size</string>
 	<string name="pref_text_size_title">Text Size</string>

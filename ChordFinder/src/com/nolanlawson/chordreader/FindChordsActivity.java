@@ -199,7 +199,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	    	startSettingsActivity();
 	    	break;
 	    case R.id.menu_edit_file:
-	    	showConfirmChordchartDialog();
+	    	showConfirmChordchartDialog(true);
 	    	break;
 	    	
 	    }
@@ -911,11 +911,11 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 			}
 		}
 		
-		showConfirmChordchartDialog();
+		showConfirmChordchartDialog(false);
 		
 	}
 
-	private void showConfirmChordchartDialog() {
+	private void showConfirmChordchartDialog(boolean editMode) {
 		
 		LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		
@@ -923,7 +923,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		editText.setText(chordText);
 		
 		new AlertDialog.Builder(FindChordsActivity.this)  
-		             .setTitle(R.string.confirm_chordchart)  
+		             .setTitle(editMode? R.string.edit_chords : R.string.confirm_chordchart)  
 		             .setView(editText)
 		             .setCancelable(true)
 		             .setNegativeButton(android.R.string.cancel, null)
