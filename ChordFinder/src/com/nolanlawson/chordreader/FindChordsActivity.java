@@ -433,17 +433,15 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 				
 				long start = System.currentTimeMillis();
 				
-				for (ChordInText chordInText : chordsInText) {
-					
-					chordInText.setChord(TransposeHelper.transposeChord(
-							chordInText.getChord(), capoFret - newCapoFret, transposeHalfSteps - newTransposeHalfSteps));
-				}
-
+				
+				int capoDiff = capoFret - newCapoFret;
+				int transposeDiff = transposeHalfSteps - newTransposeHalfSteps;
 				capoFret = newCapoFret;
 				transposeHalfSteps = newTransposeHalfSteps;
 				
-				Spannable chordText = buildUpChordTextToDisplay();
+				updateChordsInTextForTransposition(transposeDiff, capoDiff);
 				
+				Spannable chordTextSpannable = buildUpChordTextToDisplay();
 
 				long elapsed = System.currentTimeMillis() - start;
 				
@@ -458,7 +456,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 				}
 				
 				
-				return chordText;
+				return chordTextSpannable;
 				
 			}
 
@@ -475,6 +473,16 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 		task.execute((Void)null);
 
+		
+	}
+
+	private void updateChordsInTextForTransposition(int transposeDiff, int capoDiff) {
+		
+		for (ChordInText chordInText : chordsInText) {
+			
+			chordInText.setChord(TransposeHelper.transposeChord(
+					chordInText.getChord(), capoDiff, transposeDiff));
+		}
 		
 	}
 
@@ -1135,19 +1143,19 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	}	
 	
 
-	private void analyzeChordsAndShowInitialChordView() {
+	private void analyzeChordsAndShowChordView() {
 	
 		chordsInText = ChordParser.findChordsInText(chordText);
 		
 		log.d("found %d chords", chordsInText.size());
 		
-		showInitialChordView();
+		showChordView();
 		
 	}
 
 
 
-	private void showInitialChordView() {
+	private void showChordView() {
 		
 		// do in the background to avoid jankiness
 		
@@ -1161,7 +1169,6 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 			@Override
 			protected void onPreExecute() {
 				super.onPreExecute();
-				viewingTextView.setText(chordText); // just to display something while the user waits
 				progressDialog.show();
 			}
 
@@ -1169,6 +1176,11 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 			protected Spannable doInBackground(Void... params) {
 				
 				long start = System.currentTimeMillis();
+				
+				if (capoFret != 0 || transposeHalfSteps != 0) {
+					updateChordsInTextForTransposition(-transposeHalfSteps, -capoFret);
+				}
+				
 				Spannable newText = buildUpChordTextToDisplay();
 				
 				long elapsed = System.currentTimeMillis() - start;
@@ -1338,7 +1350,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		searchingView.setVisibility(View.GONE);
 		viewingScrollView.setVisibility(View.VISIBLE);
 		
-		analyzeChordsAndShowInitialChordView();
+		analyzeChordsAndShowChordView();
 		
 		
 	}
