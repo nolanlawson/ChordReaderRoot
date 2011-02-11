@@ -222,7 +222,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		// ads may have been enabled/disabled
 		if (adView.getVisibility() == View.VISIBLE && !PreferenceHelper.getShowAds(this)) {
 			adView.setVisibility(View.GONE);
-		} else if (PreferenceHelper.getShowAds(this) && viewingScrollView.getVisibility() == View.GONE) {
+		} else if (PreferenceHelper.getShowAds(this) && !isInViewingMode()) {
 			// in search mode and ads are visible
 			adView.setVisibility(View.VISIBLE);
 		}
@@ -346,6 +346,16 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	}
 
 	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		
+		if (wakeLock.isHeld()) {
+			log.d("Releasing wakelock");
+			wakeLock.release();
+		}
+		
+	}
 
 
 	@Override
@@ -354,6 +364,11 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 		// just in case the text size has changed
 		viewingTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, PreferenceHelper.getTextSizePreference(this));
+		
+		if (isInViewingMode() && !wakeLock.isHeld()) {
+			log.d("Acquiring wakelock");
+			wakeLock.acquire();
+		}
 		
 	}
 
@@ -367,6 +382,10 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		Toast.makeText(this, R.string.stopping, Toast.LENGTH_SHORT).show();
 		webView.stopLoading();
 		
+	}
+	
+	private boolean isInViewingMode() {
+		return viewingScrollView.getVisibility() == View.VISIBLE;
 	}
 	
 	private void createTransposeDialog() {
@@ -725,8 +744,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	public boolean onKeyDown(int keyCode, KeyEvent event)  {
 		
 	    if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-	    	if (webView.canGoBack()) {
-	    		webView.goBack();
+	    	if (handleBackButton()) {
 	    		return true;
 	    	}
 	    } else if (keyCode == KeyEvent.KEYCODE_SEARCH && event.getRepeatCount() == 0) {
@@ -745,6 +763,23 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 
 	    return super.onKeyDown(keyCode, event);
 	}	
+
+	private boolean handleBackButton() {
+		
+		if (isInViewingMode()) {
+			
+			// TODO
+			
+		} else { // searching mode
+			
+			if (webView.canGoBack()) {
+	    		webView.goBack();
+	    		return true;
+			}
+		}
+		return false;
+		
+	}
 
 	private void performSearch() {
 		
