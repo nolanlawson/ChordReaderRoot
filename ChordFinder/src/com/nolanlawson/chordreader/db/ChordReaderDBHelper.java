@@ -1,5 +1,8 @@
 package com.nolanlawson.chordreader.db;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -130,18 +133,30 @@ public class ChordReaderDBHelper extends SQLiteOpenHelper {
 	}
 	
 	
-	public Cursor findAllQueries(long timestamp, CharSequence prefix) {
+	public List<String> findAllQueries(long timestamp, CharSequence prefix) {
 		synchronized (ChordReaderDBHelper.class) {
-			Cursor cursor = db.query(
-						TABLE_QUERY, 
-						new String[]{COLUMN_ID, COLUMN_QUERY_TEXT}, 
-						COLUMN_QUERY_TIMESTAMP + ">" + timestamp + " and " + COLUMN_QUERY_TEXT +" like ?", 
-						new String[]{prefix + "%"}, 
-						null, 
-						null, 
-						COLUMN_QUERY_TIMESTAMP + " desc");
+			Cursor cursor = null;
+			List<String> result = new ArrayList<String>();
+			try {
+				cursor = db.query(
+							TABLE_QUERY, 
+							new String[]{COLUMN_ID, COLUMN_QUERY_TEXT}, 
+							COLUMN_QUERY_TIMESTAMP + ">" + timestamp + " and " + COLUMN_QUERY_TEXT +" like ?", 
+							new String[]{prefix + "%"}, 
+							null, 
+							null, 
+							COLUMN_QUERY_TIMESTAMP + " desc");
+					
+				while (cursor.moveToNext()) {
+					result.add(cursor.getString(1));
+				}
 				
-			return cursor;
+				return result;
+			} finally {
+				if (cursor != null) {
+					cursor.close();
+				}
+			}
 		}
 
 	}

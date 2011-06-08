@@ -1,8 +1,5 @@
 package com.nolanlawson.chordreader;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -11,9 +8,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -25,8 +19,6 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.StateListDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -80,7 +72,6 @@ import com.nolanlawson.chordreader.chords.regex.ChordInText;
 import com.nolanlawson.chordreader.chords.regex.ChordParser;
 import com.nolanlawson.chordreader.data.ColorScheme;
 import com.nolanlawson.chordreader.db.ChordReaderDBHelper;
-import com.nolanlawson.chordreader.db.QueryCursorAdapter;
 import com.nolanlawson.chordreader.db.Transposition;
 import com.nolanlawson.chordreader.helper.ChordDictionary;
 import com.nolanlawson.chordreader.helper.DialogHelper;
@@ -128,6 +119,8 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	private AdView adView;
 	private LinearLayout mainView;
 	
+	private ArrayAdapter<String> adapter;
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,7 +148,6 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
     public void onDestroy() {
     	
     	super.onDestroy();
-    	((QueryCursorAdapter)searchEditText.getAdapter()).destroy();
     }
 
 
@@ -297,10 +289,19 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 		
 		long queryLimit = System.currentTimeMillis() - HISTORY_WINDOW;
-		ChordReaderDBHelper dbHelper = new ChordReaderDBHelper(this);
-		Cursor cursor = dbHelper.findAllQueries(queryLimit, "");
-		dbHelper.close();
-		QueryCursorAdapter adapter = new QueryCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, queryLimit, cursor);
+		ChordReaderDBHelper dbHelper = null;
+		try {
+			dbHelper = new ChordReaderDBHelper(this);
+			List<String> queries = dbHelper.findAllQueries(queryLimit, "");
+			adapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, queries);
+		} finally {
+			if (dbHelper != null) {
+				dbHelper.close();
+			}
+		}
+		
+		
+		//(this, android.R.layout.simple_dropdown_item_1line, queryLimit, cursor);
 		
 		searchEditText.setAdapter(adapter);
 		
@@ -793,9 +794,9 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 			return;
 		}
 		
-		ChordReaderDBHelper dbHelper = new ChordReaderDBHelper(this);
-		dbHelper.saveQuery(searchText.toString());
-		dbHelper.close();
+		// save the query, add it to the auto suggest text view
+		saveQuery(searchText.toString());
+		
 		
 		searchText = searchText + " " + getText(R.string.chords_keyword);
 		
@@ -807,6 +808,26 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		}
 		
 		loadUrl("http://www.google.com/search?q=" + urlEncoded);
+		
+	}
+
+	private void saveQuery(String searchText) {
+		
+		ChordReaderDBHelper dbHelper = null;
+		try { 
+			dbHelper = new ChordReaderDBHelper(this);
+			dbHelper.saveQuery(searchText);
+		} finally {
+			if (dbHelper != null) {
+				dbHelper.close();
+			}
+		}
+		
+		// don't add duplicates
+		if (adapter.getPosition(searchText) == -1) {
+			adapter.insert(searchText, 0); // add first so it shows up first
+		}
+		
 		
 	}
 
