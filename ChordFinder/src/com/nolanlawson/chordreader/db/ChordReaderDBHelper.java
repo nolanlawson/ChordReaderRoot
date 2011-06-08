@@ -161,7 +161,12 @@ public class ChordReaderDBHelper extends SQLiteOpenHelper {
 
 	}
 	
-	public void saveQuery(String queryText) {
+	/**
+	 * Return true if a new query was saved
+	 * @param queryText
+	 * @return
+	 */
+	public boolean saveQuery(String queryText) {
 		synchronized (ChordReaderDBHelper.class) {
 			
 			long currentTime = System.currentTimeMillis();
@@ -175,7 +180,9 @@ public class ChordReaderDBHelper extends SQLiteOpenHelper {
 					+ ") values (?," + currentTime + ");";
 				
 				db.execSQL(insertSql, new String[]{queryText});	
+				return true;
 			}
+			return false;
 		}
 	}
 }

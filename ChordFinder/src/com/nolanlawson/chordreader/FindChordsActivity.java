@@ -5,9 +5,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -125,7 +123,6 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	private AdView adView;
 	private LinearLayout mainView;
 	
-	private Set<String> querySet;
 	private ArrayAdapter<String> queryAdapter;
 	
     @Override
@@ -302,7 +299,6 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 			List<String> queries = dbHelper.findAllQueries(queryLimit, "");
 			queryAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, queries);
 			searchEditText.setAdapter(queryAdapter);
-			querySet = new HashSet<String>(queries);
 		} finally {
 			if (dbHelper != null) {
 				dbHelper.close();
@@ -821,21 +817,20 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		log.d("saving: '%s'", searchText);
 		
 		ChordReaderDBHelper dbHelper = null;
+		
 		try { 
 			dbHelper = new ChordReaderDBHelper(this);
-			dbHelper.saveQuery(searchText);
+			boolean newQuerySaved = dbHelper.saveQuery(searchText);
+
+			// don't add duplicates
+			if (newQuerySaved) {
+				queryAdapter.insert(searchText, 0); // add first so it shows up first
+			}
 		} finally {
 			if (dbHelper != null) {
 				dbHelper.close();
 			}
 		}
-
-		// don't add duplicates
-		if (!querySet.contains(searchText)) {
-			queryAdapter.insert(searchText, 0); // add first so it shows up first
-			querySet.add(searchText);
-		}
-		
 		
 	}
 
