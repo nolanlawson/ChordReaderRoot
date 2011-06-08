@@ -312,7 +312,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 		webView = (WebView) findViewById(R.id.find_chords_web_view);
 		webView.setWebViewClient(client);
-		webView.getSettings().setUserAgentString(DESKTOP_USERAGENT);
+		//webView.getSettings().setUserAgentString(DESKTOP_USERAGENT);
 		
 		/* JavaScript must be enabled if you want it to work, obviously */  
 		webView.getSettings().setJavaScriptEnabled(true);  
