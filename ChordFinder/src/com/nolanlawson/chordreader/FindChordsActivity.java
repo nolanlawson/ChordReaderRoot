@@ -5,7 +5,9 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,7 +19,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -124,7 +125,8 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	private AdView adView;
 	private LinearLayout mainView;
 	
-	private ArrayAdapter<String> adapter;
+	private Set<String> querySet;
+	private ArrayAdapter<String> queryAdapter;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -298,17 +300,14 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		try {
 			dbHelper = new ChordReaderDBHelper(this);
 			List<String> queries = dbHelper.findAllQueries(queryLimit, "");
-			adapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, queries);
+			queryAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, queries);
+			searchEditText.setAdapter(queryAdapter);
+			querySet = new HashSet<String>(queries);
 		} finally {
 			if (dbHelper != null) {
 				dbHelper.close();
 			}
 		}
-		
-		
-		//(this, android.R.layout.simple_dropdown_item_1line, queryLimit, cursor);
-		
-		searchEditText.setAdapter(adapter);
 		
 		webView = (WebView) findViewById(R.id.find_chords_web_view);
 		webView.setWebViewClient(client);
@@ -794,7 +793,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 		imm.hideSoftInputFromWindow(searchEditText.getWindowToken(), 0);
 		
-		CharSequence searchText = searchEditText.getText();
+		String searchText = (searchEditText.getText() == null ? "" : searchEditText.getText().toString().trim());
 		
 		if (TextUtils.isEmpty(searchText)) {
 			return;
@@ -819,6 +818,8 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 
 	private void saveQuery(String searchText) {
 		
+		log.d("saving: '%s'", searchText);
+		
 		ChordReaderDBHelper dbHelper = null;
 		try { 
 			dbHelper = new ChordReaderDBHelper(this);
@@ -828,10 +829,11 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 				dbHelper.close();
 			}
 		}
-		
+
 		// don't add duplicates
-		if (adapter.getPosition(searchText) == -1) {
-			adapter.insert(searchText, 0); // add first so it shows up first
+		if (!querySet.contains(searchText)) {
+			queryAdapter.insert(searchText, 0); // add first so it shows up first
+			querySet.add(searchText);
 		}
 		
 		
