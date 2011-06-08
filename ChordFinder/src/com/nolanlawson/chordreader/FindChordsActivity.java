@@ -84,6 +84,11 @@ import com.nolanlawson.chordreader.util.UtilLogger;
 
 public class FindChordsActivity extends Activity implements AdListener, OnEditorActionListener, OnClickListener, TextWatcher, OnTouchListener {
 
+	private static final String DESKTOP_USERAGENT =
+		             "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_7; en-us)"
+		             + " AppleWebKit/530.17 (KHTML, like Gecko) Version/4.0"
+		             + " Safari/530.17";
+	
 	private static final int PROGRESS_DIALOG_MIN_TIME = 600;
 	private static final long AD_DISMISS_TIME = 10000;
 	private static final long HISTORY_WINDOW = TimeUnit.SECONDS.toMillis(60 * 60 * 24 * 360); // about one year 
@@ -307,6 +312,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 		webView = (WebView) findViewById(R.id.find_chords_web_view);
 		webView.setWebViewClient(client);
+		webView.getSettings().setUserAgentString(DESKTOP_USERAGENT);
 		
 		/* JavaScript must be enabled if you want it to work, obviously */  
 		webView.getSettings().setJavaScriptEnabled(true);  
