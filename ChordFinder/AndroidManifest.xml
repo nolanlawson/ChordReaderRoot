@@ -29,15 +29,6 @@
 		<activity android:name=".AboutActivity" android:theme="@android:style/Theme.Dialog" />
 		
 		<activity android:name=".SettingsActivity" android:label="@string/settings"/>
-		
-		<activity android:name=".ChordLinkClickedActivity" android:theme="@android:style/Theme.Dialog">
-			
-			<intent-filter>
-			    <category android:name="android.intent.category.DEFAULT" />
-			    <action android:name="android.intent.action.VIEW" />
-			    <data android:scheme="com.nolanlawson.chordreader" />  
-			</intent-filter>
-		</activity>
 
 	</application>
 

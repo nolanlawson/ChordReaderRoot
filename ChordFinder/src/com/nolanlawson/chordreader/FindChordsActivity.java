@@ -11,14 +11,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
+import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,9 +30,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
-import android.text.style.URLSpan;
 import android.util.TypedValue;
-import android.view.Display;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -41,12 +38,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
-import android.view.WindowManager;
 import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
+import android.view.animation.Animation.AnimationListener;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
@@ -57,16 +54,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
+import android.widget.TextView.OnEditorActionListener;
 
 import com.admob.android.ads.AdListener;
 import com.admob.android.ads.AdManager;
 import com.admob.android.ads.AdView;
 import com.nolanlawson.chordreader.adapter.FileAdapter;
+import com.nolanlawson.chordreader.chords.Chord;
 import com.nolanlawson.chordreader.chords.regex.ChordInText;
 import com.nolanlawson.chordreader.chords.regex.ChordParser;
 import com.nolanlawson.chordreader.data.ColorScheme;
@@ -74,10 +73,12 @@ import com.nolanlawson.chordreader.db.ChordReaderDBHelper;
 import com.nolanlawson.chordreader.db.Transposition;
 import com.nolanlawson.chordreader.helper.ChordDictionary;
 import com.nolanlawson.chordreader.helper.DialogHelper;
+import com.nolanlawson.chordreader.helper.PopupHelper;
 import com.nolanlawson.chordreader.helper.PreferenceHelper;
 import com.nolanlawson.chordreader.helper.SaveFileHelper;
 import com.nolanlawson.chordreader.helper.TransposeHelper;
 import com.nolanlawson.chordreader.helper.WebPageExtractionHelper;
+import com.nolanlawson.chordreader.util.InternalURLSpan;
 import com.nolanlawson.chordreader.util.Pair;
 import com.nolanlawson.chordreader.util.UtilLogger;
 
@@ -88,12 +89,15 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		             + " AppleWebKit/530.17 (KHTML, like Gecko) Version/4.0"
 		             + " Safari/530.17";
 	
+	private static final int CHORD_POPUP_Y_OFFSET_IN_SP = 24;
 	private static final int PROGRESS_DIALOG_MIN_TIME = 600;
 	private static final long AD_DISMISS_TIME = 10000;
 	private static final long HISTORY_WINDOW = TimeUnit.SECONDS.toMillis(60 * 60 * 24 * 360); // about one year 
 	private static final long PAGE_WAIT_TIME = 3000;
 	
 	private static UtilLogger log = new UtilLogger(FindChordsActivity.class);
+	
+	private static float lastXCoordinate, lastYCoordinate;
 	
 	private AutoCompleteTextView searchEditText;
 	private WebView webView;
@@ -1381,16 +1385,16 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 			//log.d("substr is '%s'", sb.substring(
 			//		newStartAndEndPosition.getFirst(), newStartAndEndPosition.getSecond()));
 			
-			String chordAsString = chordsInText.get(i).getChord().toPrintableString();
+			final Chord chord = chordsInText.get(i).getChord();
 			
-			// uri to point back to our broadcast receiver
-			Uri uri = new Uri.Builder()
-					.scheme(getPackageName())
-					.appendPath("click_chord")
-					.appendQueryParameter("chord", chordAsString)
-					.build();
+			InternalURLSpan urlSpan = new InternalURLSpan(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					showChordPopup(chord);
+				}
+			});
 			
-			URLSpan urlSpan = new URLSpan(uri.toString());
 			spannable.setSpan(urlSpan, 
 					newStartAndEndPosition.getFirst(), 
 					newStartAndEndPosition.getSecond(), 
@@ -1398,6 +1402,33 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		}
 
 		return spannable;
+	}
+
+	private void showChordPopup(Chord chord) {
+		
+		
+		final PopupWindow window = PopupHelper.newBasicPopupWindow(this);
+		
+
+		LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		
+		View view = inflater.inflate(R.layout.chord_popup, null);
+		TextView textView = (TextView) view.findViewById(android.R.id.text1);
+		textView.setText(ChordDictionary.getGuitarChordsForChord(chord).get(0));
+		
+		window.setContentView(view);
+		
+		int[] textViewLocation = new int[2];
+		viewingTextView.getLocationOnScreen(textViewLocation);
+		
+		int chordPopupOffset = Math.round(TypedValue.applyDimension(
+				TypedValue.COMPLEX_UNIT_SP, CHORD_POPUP_Y_OFFSET_IN_SP, getResources().getDisplayMetrics()));
+		
+		int offsetX = Math.round(lastXCoordinate - textViewLocation[0]);
+		int offsetY = Math.max(0, Math.round(lastYCoordinate - textViewLocation[1]) - chordPopupOffset);
+		
+		PopupHelper.showLikeQuickAction(window, textView, viewingTextView, getWindowManager(), offsetX, offsetY);
+		
 	}
 
 	private void switchToViewingMode() {
@@ -1466,10 +1497,8 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 		// record where the user touched so we know where to place the window, so it will be out of the way
 		
-		Display display = getWindowManager().getDefaultDisplay();
-		
-		ChordLinkClickedActivity.lastXRelativeCoordinate = event.getRawX() / display.getWidth();
-		ChordLinkClickedActivity.lastYRelativeCoordinate = event.getRawY() / display.getHeight();
+		lastXCoordinate = event.getRawX();
+		lastYCoordinate = event.getRawY();
 		
 		return false;
 	}
