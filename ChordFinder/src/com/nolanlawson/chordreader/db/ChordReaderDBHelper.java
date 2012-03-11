@@ -9,14 +9,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.nolanlawson.chordreader.util.UtilLogger;
-
 public class ChordReaderDBHelper extends SQLiteOpenHelper {
 
 
-	//logger
-	private static UtilLogger log = new UtilLogger(ChordReaderDBHelper.class);
-	
 	// schema constants
 	
 	private static final String DB_NAME = "chord_reader.db";

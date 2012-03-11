@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 
 import com.nolanlawson.chordreader.R;
 
