@@ -1354,7 +1354,10 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 		View view = inflater.inflate(R.layout.chord_popup, null);
 		TextView textView = (TextView) view.findViewById(android.R.id.text1);
-		textView.setText(ChordDictionary.getGuitarChordsForChord(chord).get(0));
+		textView.setText(chord.toPrintableString(getNoteNaming()));
+		
+		TextView textView2 = (TextView) view.findViewById(android.R.id.text2);
+		textView2.setText(createGuitarChordText(chord));
 		
 		window.setContentView(view);
 		
@@ -1367,8 +1370,40 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		int offsetX = Math.round(lastXCoordinate - textViewLocation[0]);
 		int offsetY = Math.max(0, Math.round(lastYCoordinate - textViewLocation[1]) - chordPopupOffset);
 		
-		PopupHelper.showLikeQuickAction(window, textView, viewingTextView, getWindowManager(), offsetX, offsetY);
+		int heightOverride = getResources().getDimensionPixelSize(R.dimen.popup_height);
 		
+		PopupHelper.showLikeQuickAction(window, view, viewingTextView, getWindowManager(), offsetX, offsetY, heightOverride);
+		
+	}
+
+	private CharSequence createGuitarChordText(Chord chord) {
+		// TODO: have a better interface for switching between alternative ways of playing the same chord.
+		// For now, just build up a list and show everything at once.
+		
+		List<String> guitarChords = ChordDictionary.getGuitarChordsForChord(chord);
+		
+		// Given how the dictionary is read in, these chords should have the simplest ones first
+		// Just separate each with a number, if there is more than one
+		
+		switch (guitarChords.size()) {
+			case 0:
+				return getString(R.string.no_guitar_chord_available);
+			case 1: 
+				return guitarChords.get(0);
+			default:
+				// create a list
+				StringBuilder stringBuilder = new StringBuilder();
+				for (int i = 0; i < guitarChords.size(); i++) {
+					stringBuilder
+						.append(getString(R.string.variation))
+						.append(' ')
+						.append(i + 1)
+						.append(": ")
+						.append(guitarChords.get(i))
+						.append('\n');
+				}
+				return stringBuilder.substring(0, stringBuilder.length() - 1); // cut off final newline
+		}
 	}
 
 	private void switchToViewingMode() {

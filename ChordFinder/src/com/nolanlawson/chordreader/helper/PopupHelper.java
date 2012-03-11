@@ -50,7 +50,8 @@ public class PopupHelper {
 	 * @param yOffset
 	 *            offset in the Y direction
 	 */
-	public static void showLikeQuickAction(PopupWindow window, View root, View anchor, WindowManager windowManager, int xOffset, int yOffset) {
+	public static void showLikeQuickAction(PopupWindow window, View root, View anchor, WindowManager windowManager, 
+			int xOffset, int yOffset, int heightOverride) {
 
 		window.setAnimationStyle(R.style.Animations_GrowFromBottom);
 
@@ -64,7 +65,7 @@ public class PopupHelper {
 		root.measure(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		
 		int rootWidth = root.getMeasuredWidth();
-		int rootHeight = root.getMeasuredHeight();
+		int rootHeight = heightOverride != -1 ? heightOverride : root.getMeasuredHeight();
 		
 		int xPos = anchorRect.left - rootWidth + xOffset;
 		int yPos = anchorRect.top - rootHeight + yOffset;

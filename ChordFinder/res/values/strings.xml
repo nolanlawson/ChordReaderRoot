@@ -44,6 +44,9 @@
     <string name="edit">Edit</string>
     <string name="edit_chords">Edit Chords</string>
     
+    <string name="no_guitar_chord_available">No guitar fingering available.</string>
+    <string name="variation">Var.</string>
+    
 	<string name="pref_text_size">text_size</string>
 	<string name="pref_text_size_title">Text Size</string>
 	
