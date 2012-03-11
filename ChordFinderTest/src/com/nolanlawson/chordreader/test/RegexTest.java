@@ -88,7 +88,6 @@ public class RegexTest extends
 	public void test10() {
 		testRegex("Am9", Chord.newChord(A, Minor, Minor9, null, null, null));
 		testRegex("C6", Chord.newChord(C, Major, null, Major6, null, null));
-		
 	}
 	
 	public void testContainsLineWithChords() {
