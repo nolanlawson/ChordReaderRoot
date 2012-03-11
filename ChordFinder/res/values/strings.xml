@@ -59,10 +59,6 @@
     <string name="text_size_large_name">Large (14pt)</string>
     <string name="text_size_xlarge_name">Extra Large (16pt)</string>
     
-    <string name="pref_show_ads">show_ads</string>
-    <string name="pref_show_ads_title">Show Ads</string>
-    <string name="pref_show_ads_summary">Keeping this enabled helps support the developer.</string>
-    
     <string name="pref_scheme">color_scheme</string>
     <string name="pref_scheme_title">Color Scheme</string>
     <string name="pref_scheme_dark">Dark</string>

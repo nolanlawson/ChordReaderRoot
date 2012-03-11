@@ -41,9 +41,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
-import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
@@ -61,9 +58,6 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
-import com.admob.android.ads.AdListener;
-import com.admob.android.ads.AdManager;
-import com.admob.android.ads.AdView;
 import com.nolanlawson.chordreader.adapter.FileAdapter;
 import com.nolanlawson.chordreader.chords.Chord;
 import com.nolanlawson.chordreader.chords.NoteNaming;
@@ -83,11 +77,10 @@ import com.nolanlawson.chordreader.util.InternalURLSpan;
 import com.nolanlawson.chordreader.util.Pair;
 import com.nolanlawson.chordreader.util.UtilLogger;
 
-public class FindChordsActivity extends Activity implements AdListener, OnEditorActionListener, OnClickListener, TextWatcher, OnTouchListener {
+public class FindChordsActivity extends Activity implements OnEditorActionListener, OnClickListener, TextWatcher, OnTouchListener {
 
 	private static final int CHORD_POPUP_Y_OFFSET_IN_SP = 24;
 	private static final int PROGRESS_DIALOG_MIN_TIME = 600;
-	private static final long AD_DISMISS_TIME = 10000;
 	private static final long HISTORY_WINDOW = TimeUnit.SECONDS.toMillis(60 * 60 * 24 * 360); // about one year 
 	private static final long PAGE_WAIT_TIME = 3000;
 	
@@ -97,7 +90,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	
 	private AutoCompleteTextView searchEditText;
 	private WebView webView;
-	private View messageMainView, messageSecondaryView, searchingView;
+	private View messageSecondaryView, searchingView;
 	private TextView messageTextView;
 	private ProgressBar progressBar;
 	private ImageView infoIconImageView;
@@ -120,7 +113,6 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 	
 	private TextView viewingTextView;
 	private ScrollView viewingScrollView;
-	private AdView adView;
 	private LinearLayout mainView;
 	
 	private ArrayAdapter<String> queryAdapter;
@@ -214,14 +206,6 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		// came back from the settings activity; need to update the text size
 		PreferenceHelper.clearCache();
 		viewingTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, PreferenceHelper.getTextSizePreference(this));
-		
-		// ads may have been enabled/disabled
-		if (adView.getVisibility() == View.VISIBLE && !PreferenceHelper.getShowAds(this)) {
-			adView.setVisibility(View.GONE);
-		} else if (PreferenceHelper.getShowAds(this) && !isInViewingMode()) {
-			// in search mode and ads are visible
-			adView.setVisibility(View.VISIBLE);
-		}
 		
 		// reapply color scheme
 		applyColorScheme();
@@ -328,7 +312,6 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		searchButton = (Button) findViewById(R.id.find_chords_search_button);
 		searchButton.setOnClickListener(this);
 		
-		messageMainView = findViewById(R.id.find_chords_message_main_view);
 		messageSecondaryView = findViewById(R.id.find_chords_message_secondary_view);
 		messageSecondaryView.setOnClickListener(this);
 		messageSecondaryView.setEnabled(false);
@@ -341,14 +324,6 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		viewingScrollView.setVisibility(View.GONE);
 		
 		searchingView = findViewById(R.id.find_chords_finding_view);
-		
-		
-		if (UtilLogger.DEBUG_MODE) {
-			AdManager.setTestDevices(new String[] { AdManager.TEST_EMULATOR, "1C7A94DAADBF54DB8F7990E3EE1BBD76" });        
-		}
-		adView = (AdView) findViewById(R.id.ad);
-		adView.setAdListener(this);
-		adView.setVisibility(PreferenceHelper.getShowAds(this) ? View.VISIBLE : View.GONE);
 		
 		mainView = (LinearLayout) findViewById(R.id.find_chords_main_view);
 		
@@ -1276,10 +1251,6 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 				
 				progressDialog.dismiss();
 				
-				if (adView.getVisibility() == View.VISIBLE) {
-					dismissAdsAfterAwhile();
-				}
-				
 			}
 			
 		};
@@ -1289,65 +1260,10 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 	}
 	
-	private void dismissAdsAfterAwhile() {
-		// gracefully dismiss the ad after the user has looked at the chords for a few seconds
-		
-		adView.requestFreshAd();
-		
-		AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-			
-			@Override
-			protected Void doInBackground(Void... params) {
-				
-				try {
-					Thread.sleep(AD_DISMISS_TIME);
-				} catch (InterruptedException e) {
-					log.e(e, "unexpected exception");
-				}
-				
-				return null;
-			}
-
-			@Override
-			protected void onPostExecute(Void result) {
-				super.onPostExecute(result);
-				Animation animation = AnimationUtils.loadAnimation(FindChordsActivity.this, R.anim.slide_top_to_bottom);
-				adView.setAnimation(animation);
-				animation.setAnimationListener(new AnimationListener() {
-					
-					@Override
-					public void onAnimationStart(Animation animation) {
-					}
-					
-					@Override
-					public void onAnimationRepeat(Animation animation) {
-					}
-					
-					@Override
-					public void onAnimationEnd(Animation animation) {
-						runOnUiThread(new Runnable(){
-
-							@Override
-							public void run() {
-								adView.setVisibility(View.GONE);
-								
-							}
-						});
-					}
-				});
-				adView.startAnimation(animation);
-			}
-		};
-		task.execute((Void)null);
-	}
-
 	private void applyLinkifiedChordsTextToTextView(Spannable newText) {
 		
 		viewingTextView.setMovementMethod(LinkMovementMethod.getInstance());
 		viewingTextView.setText(newText);
-
-		
-		
 	}
 
 	private Spannable buildUpChordTextToDisplay() {
@@ -1463,11 +1379,6 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 		searchingView.setVisibility(View.VISIBLE);
 		viewingScrollView.setVisibility(View.GONE);
-		boolean showAds = PreferenceHelper.getShowAds(this);
-		adView.setVisibility(showAds ? View.VISIBLE : View.GONE);
-		if (showAds) {
-			adView.requestFreshAd();
-		}
 	}
 
 	private void resetData() {
@@ -1509,26 +1420,6 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		lastYCoordinate = event.getRawY();
 		
 		return false;
-	}
-	
-	@Override
-	public void onFailedToReceiveAd(AdView arg0) {
-		log.d("onFailedToReceiveAd()");
-	}
-
-	@Override
-	public void onFailedToReceiveRefreshedAd(AdView arg0) {
-		log.d("onFailedToReceiveRefreshedAd()");		
-	}
-
-	@Override
-	public void onReceiveAd(AdView arg0) {
-		log.d("onReceiveAd()");		
-	}
-
-	@Override
-	public void onReceiveRefreshedAd(AdView arg0) {
-		log.d("onReceiveRefreshedAd()");		
 	}
 	
 	private void applyColorScheme() {

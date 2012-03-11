@@ -78,11 +78,4 @@
 			android:paddingRight="3dp" />
 	</ScrollView>
 
-	<!-- Place an AdMob ad at the bottom of the screen. -->
-	<!-- It has white text on a black background. -->
-	<com.admob.android.ads.AdView android:id="@+id/ad"
-		android:visibility="visible" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" app:backgroundColor="#000000"
-		app:primaryTextColor="#FFFFFF" app:secondaryTextColor="#CCCCCC"
-		app:keywords="chord chords guitar tab tabs guitarist sheet music" app:refreshInterval="30" />
 </LinearLayout>

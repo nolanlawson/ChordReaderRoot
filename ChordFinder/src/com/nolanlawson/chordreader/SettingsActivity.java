@@ -7,7 +7,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -17,7 +16,6 @@ import android.view.KeyEvent;
 import android.widget.ListAdapter;
 
 import com.nolanlawson.chordreader.adapter.BasicTwoLineAdapter;
-import com.nolanlawson.chordreader.chords.NoteNaming;
 import com.nolanlawson.chordreader.helper.PreferenceHelper;
 
 public class SettingsActivity extends PreferenceActivity 
@@ -26,7 +24,6 @@ public class SettingsActivity extends PreferenceActivity
 	public static final String EXTRA_NOTE_NAMING_CHANGED = "noteNamingChanged";
 	
 	private ListPreference textSizePreference, themePreference;
-	private CheckBoxPreference showAdsPreference;
 	private Preference noteNamingPreference;
 	private boolean noteNamingChanged;
 	
@@ -45,9 +42,6 @@ public class SettingsActivity extends PreferenceActivity
 		textSizePreference = (ListPreference) findPreference(getString(R.string.pref_text_size));
 		textSizePreference.setSummary(textSizePreference.getEntry());
 		textSizePreference.setOnPreferenceChangeListener(this);
-		
-		showAdsPreference = (CheckBoxPreference) findPreference(getString(R.string.pref_show_ads));
-		showAdsPreference.setOnPreferenceChangeListener(this);
 		
 		themePreference = (ListPreference) findPreference(getString(R.string.pref_scheme));
 		themePreference.setOnPreferenceChangeListener(this);
