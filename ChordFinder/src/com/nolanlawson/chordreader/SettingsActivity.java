@@ -1,26 +1,33 @@
 package com.nolanlawson.chordreader;
 
 import java.util.Arrays;
+import java.util.List;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.view.KeyEvent;
+import android.widget.ListAdapter;
 
+import com.nolanlawson.chordreader.adapter.BasicTwoLineAdapter;
 import com.nolanlawson.chordreader.chords.NoteNaming;
 import com.nolanlawson.chordreader.helper.PreferenceHelper;
 
-public class SettingsActivity extends PreferenceActivity implements OnPreferenceChangeListener{
+public class SettingsActivity extends PreferenceActivity 
+		implements OnPreferenceChangeListener, OnPreferenceClickListener {
 	
 	public static final String EXTRA_NOTE_NAMING_CHANGED = "noteNamingChanged";
 	
-	private ListPreference textSizePreference;
+	private ListPreference textSizePreference, themePreference;
 	private CheckBoxPreference showAdsPreference;
-	private ListPreference themePreference, noteNamingPreference;
+	private Preference noteNamingPreference;
 	private boolean noteNamingChanged;
 	
 	@Override
@@ -48,11 +55,12 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
 		CharSequence themeSummary = getString(PreferenceHelper.getColorScheme(this).getNameResource());
 		themePreference.setSummary(themeSummary);
 		
-		noteNamingPreference = (ListPreference) findPreference(getString(R.string.pref_note_naming));
-		noteNamingPreference.setOnPreferenceChangeListener(this);
+		noteNamingPreference = findPreference(getString(R.string.pref_note_naming));
+		noteNamingPreference.setOnPreferenceClickListener(this);
 		
 		CharSequence noteNamingSummary = getString(PreferenceHelper.getNoteNaming(this).getPrintableNameResource());
 		noteNamingPreference.setSummary(noteNamingSummary);
+		
 	}
 	
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -68,13 +76,6 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
 		} else if (preference.getKey().equals(getString(R.string.pref_scheme))) {
 			themePreference.setSummary(newValue.toString());
 			return true;	
-		} else if (preference.getKey().equals(getString(R.string.pref_note_naming))) {
-			String noteNamingValue = newValue.toString();
-			int noteNamingDisplay = NoteNaming.valueOf(noteNamingValue).getPrintableNameResource();
-		
-			noteNamingPreference.setSummary(noteNamingDisplay);
-			noteNamingChanged = true;
-			return true;
 		} else { // show ads
 			// TODO
 			return true;
@@ -101,7 +102,36 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
 		super.onDestroy();
 		PreferenceHelper.clearCache();
 	}
-	
-	
-	
+
+	@Override
+	public boolean onPreferenceClick(Preference preference) {
+		
+		// show note naming convention popup
+		
+		final List<String> noteNameDisplays = Arrays.asList(getResources().getStringArray(R.array.note_namings));
+		final List<String> noteNameValues = Arrays.asList(getResources().getStringArray(R.array.note_namings_values));
+		final List<String> noteNameExplanations = Arrays.asList(getResources().getStringArray(R.array.note_namings_explanations));
+		
+		int currentValueIndex = noteNameValues.indexOf(PreferenceHelper.getNoteNaming(this).name());
+		
+		ListAdapter adapter = new BasicTwoLineAdapter(this, noteNameDisplays, noteNameExplanations, currentValueIndex);
+		
+		new AlertDialog.Builder(this)
+			.setTitle(noteNamingPreference.getTitle())
+			.setNegativeButton(android.R.string.cancel, null)
+			.setSingleChoiceItems(adapter, currentValueIndex, new DialogInterface.OnClickListener(){
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				PreferenceHelper.setNoteNaming(SettingsActivity.this, noteNameValues.get(which));
+				PreferenceHelper.clearCache();
+				noteNamingPreference.setSummary(noteNameDisplays.get(which));
+				noteNamingChanged = true;
+				dialog.dismiss();
+				
+			}})
+			.show();
+
+		return true;
+	}
 }

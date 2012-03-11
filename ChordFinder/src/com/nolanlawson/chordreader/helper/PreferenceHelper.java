@@ -125,5 +125,13 @@ public class PreferenceHelper {
 		return noteNaming;
 	}
 
+	public static void setNoteNaming(Context context, String noteNameValue) {
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+		Editor editor = sharedPrefs.edit();
+		editor.putString(context.getString(R.string.pref_note_naming), noteNameValue);
+		editor.commit();
+		
+	}
+
 	
 }
