@@ -133,7 +133,7 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
         // initially, search rather than view chords
         switchToSearchingMode();
         
-        ChordDictionary.initialize(this);
+        initializeChordDictionary();
         
         applyColorScheme();
         
@@ -145,7 +145,7 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
     	
     	super.onDestroy();
     }
-
+    
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -329,7 +329,6 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 		
 		viewingTextView.setOnTouchListener(this);
 	}
-
 	
 	@Override
 	protected void onPause() {
@@ -767,6 +766,19 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 			}
 		}
 		return false;
+		
+	}
+	
+	private void initializeChordDictionary() {
+		// do in the background to avoid jank
+		new AsyncTask<Void, Void, Void>(){
+
+			@Override
+			protected Void doInBackground(Void... params) {
+				ChordDictionary.initialize(FindChordsActivity.this);
+				return null;
+			}
+		}.execute((Void)null);
 		
 	}
 
@@ -1330,6 +1342,10 @@ public class FindChordsActivity extends Activity implements OnEditorActionListen
 
 	private void showChordPopup(Chord chord) {
 		
+		if (!ChordDictionary.isInitialized()) {
+			// it could take a second or two to initialize, so just wait until then...
+			return;
+		}
 		
 		final PopupWindow window = PopupHelper.newBasicPopupWindow(this);
 		

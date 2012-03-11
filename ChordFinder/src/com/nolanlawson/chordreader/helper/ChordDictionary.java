@@ -27,7 +27,7 @@ public class ChordDictionary {
 	private static Map<Chord, List<String>> chordsToGuitarChords = null;
 	
 	public static void initialize(Context context) {
-		chordsToGuitarChords = new HashMap<Chord, List<String>>();
+		Map<Chord, List<String>> result = new HashMap<Chord, List<String>>();
 		
 		InputStream inputStream = context.getResources().openRawResource(R.raw.chords1);
 		
@@ -53,14 +53,16 @@ public class ChordDictionary {
 				// map chords to their string guitar chord representations
 				// note that there may be multiples - e.g. there are several ways
 				// to play a G chord
-				List<String> existingValue = chordsToGuitarChords.get(chord);
+				List<String> existingValue = result.get(chord);
 				if (existingValue == null) {
-					chordsToGuitarChords.put(chord, new ArrayList<String>(Collections.singleton(guitarChord)));
+					result.put(chord, new ArrayList<String>(Collections.singleton(guitarChord)));
 				} else if (!existingValue.contains(guitarChord)) {
 					existingValue.add(guitarChord);
 				}
 				
 			}
+			log.i("Chord Dictionary initialized");
+			chordsToGuitarChords = result;
 		} catch (IOException e) {
 			log.e(e, "unexpected exception");
 		}
@@ -74,6 +76,4 @@ public class ChordDictionary {
 	public static List<String> getGuitarChordsForChord(Chord chord) {
 		return chordsToGuitarChords.get(chord);
 	}
-	
-	
 }
