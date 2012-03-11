@@ -12,13 +12,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.ProgressBar;
 
+import com.nolanlawson.chordreader.helper.PackageHelper;
 import com.nolanlawson.chordreader.util.UtilLogger;
 
 public class AboutActivity extends Activity implements OnClickListener {
@@ -82,8 +83,10 @@ public class AboutActivity extends Activity implements OnClickListener {
 			Log.e("AboutActivity","This should not happen",e);
 		}
 		
-		return sb.toString();
+		String result = sb.toString();
 		
+		// format the version into the string
+		return String.format(result, PackageHelper.getVersionName(this));
 	}
 	
 	private void loadExternalUrl(String url) {

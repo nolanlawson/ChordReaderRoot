@@ -8,7 +8,7 @@
     android:paddingBottom="2dp">
     <TextView android:id="@+id/first_run_text_view" android:textColor="@android:color/primary_text_dark_nodisable"
         android:layout_width="fill_parent" android:layout_height="wrap_content"
-        android:textSize="14sp"
+        android:textSize="16sp"
         android:paddingRight="8dip"
         android:linksClickable="true" />
 </ScrollView>
