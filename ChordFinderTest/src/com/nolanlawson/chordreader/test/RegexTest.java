@@ -90,6 +90,18 @@ public class RegexTest extends
 		testRegex("C6", Chord.newChord(C, Major, null, Major6, null, null));
 	}
 	
+	public void testPowerChords() {
+		testRegex("C5", Chord.newChord(C, Major, null, PowerChord, null, null));
+		testRegex("D5", Chord.newChord(D, Major, null, PowerChord, null, null));
+		testRegex("Eb5", Chord.newChord(Eb, Major, null, PowerChord, null, null));
+	}
+	
+	public void testMajor7() {
+		testRegex("GMaj7", Chord.newChord(G, Major, Major7, null, null, null));
+		testRegex("GM7", Chord.newChord(G, Major, Major7, null, null, null));
+		testRegex("Gmaj7", Chord.newChord(G, Major, Major7, null, null, null));		
+	}
+	
 	public void testContainsLineWithChords() {
 		assertFalse(ChordParser.containsLineWithChords("", NoteNaming.English));
 		assertFalse(ChordParser.containsLineWithChords("Hello world", NoteNaming.English));

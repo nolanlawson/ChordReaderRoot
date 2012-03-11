@@ -27,13 +27,27 @@ public class ChordDictionary {
 	private static Map<Chord, List<String>> chordsToGuitarChords = null;
 	
 	public static void initialize(Context context) {
-		Map<Chord, List<String>> result = new HashMap<Chord, List<String>>();
+		Map<Chord, List<String>> dictionary = new HashMap<Chord, List<String>>();
+		try {
+			loadIntoChordDictionary(context, R.raw.chords1, NoteNaming.English, dictionary);
+			loadIntoChordDictionary(context, R.raw.chords2, NoteNaming.NorthernEuropean, dictionary);
+			
+			log.i("Chord Dictionary initialized");
+			chordsToGuitarChords = dictionary;
+		} catch (IOException e) {
+			log.e(e, "unexpected exception, couldn't initialize ChordDictionary");
+		}
 		
-		InputStream inputStream = context.getResources().openRawResource(R.raw.chords1);
+	}
+	
+	private static void loadIntoChordDictionary(Context context, int resId, NoteNaming noteNaming, Map<Chord, List<String>> dictionary) throws IOException {
+
+		InputStream inputStream = context.getResources().openRawResource(resId);
 		
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+		BufferedReader bufferedReader = null;
 		
 		try {
+			bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 			while (bufferedReader.ready()) {
 				String line = bufferedReader.readLine();
 				line = line.trim();
@@ -43,7 +57,7 @@ public class ChordDictionary {
 				String guitarChord = tokens[1].trim();
 				
 				// chord dictionary is currently just in English
-				Chord chord = ChordParser.parseChord(chordText, NoteNaming.English);
+				Chord chord = ChordParser.parseChord(chordText, noteNaming);
 				
 				if (chord == null) {
 					log.w("Unable to parse chord text '%s'; skipping", chordText);
@@ -53,20 +67,19 @@ public class ChordDictionary {
 				// map chords to their string guitar chord representations
 				// note that there may be multiples - e.g. there are several ways
 				// to play a G chord
-				List<String> existingValue = result.get(chord);
+				List<String> existingValue = dictionary.get(chord);
 				if (existingValue == null) {
-					result.put(chord, new ArrayList<String>(Collections.singleton(guitarChord)));
+					dictionary.put(chord, new ArrayList<String>(Collections.singleton(guitarChord)));
 				} else if (!existingValue.contains(guitarChord)) {
 					existingValue.add(guitarChord);
 				}
 				
 			}
-			log.i("Chord Dictionary initialized");
-			chordsToGuitarChords = result;
-		} catch (IOException e) {
-			log.e(e, "unexpected exception");
+		} finally {
+			if (bufferedReader != null) {
+				bufferedReader.close();
+			}
 		}
-		
 	}
 	
 	public static boolean isInitialized() {

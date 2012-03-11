@@ -20,8 +20,8 @@ public enum ChordExtended {
 
 	
 	// sevenths
-	Major7 (Major, Arrays.asList("maj7", "M7", "+7")),
-	Minor7 (Minor, Arrays.asList("m7", "min7", "minor7")),
+	Major7 (Major, Arrays.asList("Maj7", "maj7", "M7", "+7")),
+	Minor7 (Minor, Arrays.asList("Min7", "m7", "min7", "minor7")),
 	Dominant7 (Major, Arrays.asList("7", "dom7", "dominant7")),
 	Diminished7 (Diminished, Arrays.asList("dim7", "diminished7")),
 	
