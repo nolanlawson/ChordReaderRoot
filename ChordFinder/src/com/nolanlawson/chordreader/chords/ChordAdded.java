@@ -1,9 +1,10 @@
 package com.nolanlawson.chordreader.chords;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import com.nolanlawson.chordreader.util.ArrayUtil;
 
 /**
  * Enum for add9 and add11.
@@ -12,26 +13,26 @@ import com.nolanlawson.chordreader.util.ArrayUtil;
  */
 public enum ChordAdded {
 
-	Add9 (new String[]{"add9", "2"}),
-	Add11 (new String[]{"add11", "4"}),
-	Major6 (new String[]{"6","maj6","major6", "M6"}),
-	SixNine (new String[]{"6/9"});
+	Add9 (Arrays.asList("add9", "2")),
+	Add11 (Arrays.asList("add11", "4")),
+	Major6 (Arrays.asList("6","maj6","major6", "M6")),
+	SixNine (Arrays.asList("6/9"));
 	
-	private String[] aliases;
+	private List<String> aliases;
 	
-	ChordAdded (String[] aliases) {
+	ChordAdded (List<String> aliases) {
 		this.aliases = aliases;
 	}
 	
-	public String[] getAliases() {
+	public List<String> getAliases() {
 		return aliases;
 	}
 	
-	public static String[] getAllAliases() {
-		String[] result = new String[0];
+	public static List<String> getAllAliases() {
+		List<String> result = new ArrayList<String>();
 		
 		for (ChordAdded chordAdded : values()) {
-			result = ArrayUtil.concatenate(result, chordAdded.aliases);
+			result.addAll(chordAdded.aliases);
 		}
 		
 		return result;

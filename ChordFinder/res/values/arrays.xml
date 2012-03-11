@@ -20,4 +20,16 @@
 		<item>@string/pref_scheme_light</item>
 		<item>@string/pref_scheme_android</item>
 	</string-array>
+	
+	<string-array name="note_namings_values">
+	    <item>@string/pref_note_naming_value_english</item>
+	    <item>@string/pref_note_naming_value_northern</item>
+	    <item>@string/pref_note_naming_value_southern</item>	    	    
+	</string-array>
+	
+	<string-array name="note_namings">
+	    <item>@string/pref_note_naming_english</item>
+	    <item>@string/pref_note_naming_northern</item>
+	    <item>@string/pref_note_naming_southern</item>	    	    
+	</string-array>
 </resources>

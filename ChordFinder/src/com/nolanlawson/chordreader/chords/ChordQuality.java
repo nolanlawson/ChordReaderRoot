@@ -1,9 +1,10 @@
 package com.nolanlawson.chordreader.chords;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import com.nolanlawson.chordreader.util.ArrayUtil;
 
 /**
  * Class represeting the quality of a chord, e.g. maj/min/aug/dim.
@@ -12,26 +13,26 @@ import com.nolanlawson.chordreader.util.ArrayUtil;
  */
 public enum ChordQuality {
 
-	Major (new String[]{"", "major", "maj", "M"}),
-	Minor (new String[]{"m", "minor", "min"}),
-	Augmented (new String[]{"aug","augmented","+"}),
-	Diminished (new String[]{"dim","diminished"});
+	Major (Arrays.asList("", "major", "maj", "M")),
+	Minor (Arrays.asList("m", "minor", "min")),
+	Augmented (Arrays.asList("aug","augmented","+")),
+	Diminished (Arrays.asList("dim","diminished"));
 	
-	private String[] aliases;
+	private List<String> aliases;
 	
-	ChordQuality (String[] aliases) {
+	ChordQuality (List<String> aliases) {
 		this.aliases = aliases;
 	}
 	
-	public String[] getAliases() {
+	public List<String> getAliases() {
 		return aliases;
 	}
 	
-	public static String[] getAllAliases() {
-		String[] result = new String[0];
+	public static List<String> getAllAliases() {
+		List<String> result = new ArrayList<String>();
 		
 		for (ChordQuality chordQuality : values()) {
-			result = ArrayUtil.concatenate(result, chordQuality.aliases);
+			result.addAll(chordQuality.aliases);
 		}
 		
 		return result;

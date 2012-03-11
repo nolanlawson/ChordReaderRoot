@@ -6,6 +6,7 @@ import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 
 import com.nolanlawson.chordreader.R;
+import com.nolanlawson.chordreader.chords.NoteNaming;
 import com.nolanlawson.chordreader.data.ColorScheme;
 import com.nolanlawson.chordreader.util.UtilLogger;
 
@@ -13,6 +14,7 @@ public class PreferenceHelper {
 	
 	private static float textSize = -1;
 	private static ColorScheme colorScheme = null;
+	private static NoteNaming noteNaming = null;
 	
 	private static UtilLogger log = new UtilLogger(PreferenceHelper.class);
 		
@@ -46,6 +48,7 @@ public class PreferenceHelper {
 	public static void clearCache() {
 		textSize = -1;
 		colorScheme = null;
+		noteNaming = null;
 	}
 	
 	private static void cacheTextsize(Context context, int dimenId) {
@@ -107,6 +110,19 @@ public class PreferenceHelper {
 		
 		editor.commit();
 		
+	}
+
+	public static NoteNaming getNoteNaming(Context context) {
+		
+		if (noteNaming == null) {
+		
+			SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+			String pref = sharedPrefs.getString(context.getString(R.string.pref_note_naming), 
+					context.getString(R.string.pref_note_naming_default));
+			noteNaming = NoteNaming.valueOf(pref);
+		}
+		
+		return noteNaming;
 	}
 
 	

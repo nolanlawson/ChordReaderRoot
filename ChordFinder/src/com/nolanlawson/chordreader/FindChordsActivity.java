@@ -11,8 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.app.AlertDialog.Builder;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -38,12 +38,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.view.WindowManager;
 import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
@@ -58,14 +58,15 @@ import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 
 import com.admob.android.ads.AdListener;
 import com.admob.android.ads.AdManager;
 import com.admob.android.ads.AdView;
 import com.nolanlawson.chordreader.adapter.FileAdapter;
 import com.nolanlawson.chordreader.chords.Chord;
+import com.nolanlawson.chordreader.chords.NoteNaming;
 import com.nolanlawson.chordreader.chords.regex.ChordInText;
 import com.nolanlawson.chordreader.chords.regex.ChordParser;
 import com.nolanlawson.chordreader.data.ColorScheme;
@@ -84,11 +85,6 @@ import com.nolanlawson.chordreader.util.UtilLogger;
 
 public class FindChordsActivity extends Activity implements AdListener, OnEditorActionListener, OnClickListener, TextWatcher, OnTouchListener {
 
-	private static final String DESKTOP_USERAGENT =
-		             "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_7; en-us)"
-		             + " AppleWebKit/530.17 (KHTML, like Gecko) Version/4.0"
-		             + " Safari/530.17";
-	
 	private static final int CHORD_POPUP_Y_OFFSET_IN_SP = 24;
 	private static final int PROGRESS_DIALOG_MIN_TIME = 600;
 	private static final long AD_DISMISS_TIME = 10000;
@@ -229,6 +225,14 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 		// reapply color scheme
 		applyColorScheme();
+		
+		// if the note naming changed, then update the currently displayed file
+		if (data != null 
+				&& data.hasExtra(SettingsActivity.EXTRA_NOTE_NAMING_CHANGED)
+				&& data.getBooleanExtra(SettingsActivity.EXTRA_NOTE_NAMING_CHANGED, false)
+				&& isInViewingMode()) {
+			openFile(filename);
+		}
 		
 		
 	}
@@ -378,6 +382,10 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		
 	}
 
+	private NoteNaming getNoteNaming() {
+		return PreferenceHelper.getNoteNaming(this);
+	}
+	
 	private void refreshWebView() {
 		webView.reload();
 		
@@ -907,7 +915,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		}
 		
 		String txt = WebPageExtractionHelper.convertHtmlToText(html);
-		return ChordParser.containsLineWithChords(txt);
+		return ChordParser.containsLineWithChords(txt, getNoteNaming());
 		
 	}
 
@@ -917,11 +925,11 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 		// be sure that there are chords on this page
 		
 		String chordChart = WebPageExtractionHelper.extractChordChart(
-				chordWebpage, html);
+				chordWebpage, html, getNoteNaming());
 		
 		log.d("chordChart is %s...", chordChart != null ? (chordChart.substring(0, Math.min(chordChart.length(),30))) : chordChart);
 		
-		boolean result = ChordParser.containsLineWithChords(chordChart);
+		boolean result = ChordParser.containsLineWithChords(chordChart, getNoteNaming());
 		
 		log.d("checkHtmlOfKnownWebpage is: %s", result);
 		
@@ -965,13 +973,13 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 			log.d("known web page: %s", chordWebpage);
 			
 			chordText = WebPageExtractionHelper.extractChordChart(
-					chordWebpage, html);
+					chordWebpage, html, getNoteNaming());
 		} else {
 			// unknown webpage
 			
 			log.d("unknown webpage");
 			
-			chordText = WebPageExtractionHelper.extractLikelyChordChart(html);
+			chordText = WebPageExtractionHelper.extractLikelyChordChart(html, getNoteNaming());
 			
 			
 			if (chordText == null) { // didn't find a good extraction, so use the entire html
@@ -1208,7 +1216,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 
 	private void analyzeChordsAndShowChordView() {
 	
-		chordsInText = ChordParser.findChordsInText(chordText);
+		chordsInText = ChordParser.findChordsInText(chordText, getNoteNaming());
 		
 		log.d("found %d chords", chordsInText.size());
 		
@@ -1359,7 +1367,7 @@ public class FindChordsActivity extends Activity implements AdListener, OnEditor
 			
 			sb.append(chordText.substring(lastEndIndex, chordInText.getStartIndex()));
 			
-			String chordAsString = chordInText.getChord().toPrintableString();
+			String chordAsString = chordInText.getChord().toPrintableString(getNoteNaming());
 			
 			sb.append(chordAsString);
 			

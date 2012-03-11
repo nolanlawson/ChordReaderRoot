@@ -141,27 +141,28 @@ public class Chord implements Cloneable {
 				+ seventh + ", suspended=" + suspended + "]";
 	}
 	
-	public String toPrintableString() {
+	public String toPrintableString(NoteNaming noteNaming) {
 		
 		// TODO: make the aliases customizable rather than just taking the first one
-		StringBuilder stringBuilder = new StringBuilder(root.getAliases()[0]);
+		StringBuilder stringBuilder = new StringBuilder(
+				noteNaming.getNames(root).get(0));
 		
 		if (seventh != null) {
-			stringBuilder.append(seventh.getAliases()[0]);
+			stringBuilder.append(seventh.getAliases().get(0));
 		} else {
-			stringBuilder.append(quality.getAliases()[0]);
+			stringBuilder.append(quality.getAliases().get(0));
 		}
 		
 		if (added != null) {
-			stringBuilder.append(added.getAliases()[0]);
+			stringBuilder.append(added.getAliases().get(0));
 		}
 		
 		if (suspended != null) {
-			stringBuilder.append(suspended.getAliases()[0]);
+			stringBuilder.append(suspended.getAliases().get(0));
 		}
 		
 		if (overridingRoot != null) {
-			stringBuilder.append("/").append(overridingRoot.getAliases()[0]);
+			stringBuilder.append("/").append(noteNaming.getNames(overridingRoot).get(0));
 		}
 		
 		return stringBuilder.toString();

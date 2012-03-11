@@ -1,12 +1,15 @@
 package com.nolanlawson.chordreader.chords;
 
 
-import static com.nolanlawson.chordreader.chords.ChordQuality.*;
+import static com.nolanlawson.chordreader.chords.ChordQuality.Diminished;
+import static com.nolanlawson.chordreader.chords.ChordQuality.Major;
+import static com.nolanlawson.chordreader.chords.ChordQuality.Minor;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import com.nolanlawson.chordreader.util.ArrayUtil;
 
 /**
  * e.g. seventh, ninth, elevenths
@@ -17,23 +20,23 @@ public enum ChordExtended {
 
 	
 	// sevenths
-	Major7 (Major, new String[]{"maj7", "M7", "+7"}),
-	Minor7 (Minor, new String[]{"m7", "min7", "minor7"}),
-	Dominant7 (Major, new String[]{"7", "dom7", "dominant7"}),
-	Diminished7 (Diminished, new String[]{"dim7", "diminished7"}),
+	Major7 (Major, Arrays.asList("maj7", "M7", "+7")),
+	Minor7 (Minor, Arrays.asList("m7", "min7", "minor7")),
+	Dominant7 (Major, Arrays.asList("7", "dom7", "dominant7")),
+	Diminished7 (Diminished, Arrays.asList("dim7", "diminished7")),
 	
 	// true extended
-	Major9 (Major, new String[]{"maj9", "M9", "9"}),
-	Major11 (Major, new String[]{"maj11", "M11", "11"}),
-	Major13 (Major, new String[]{"maj13", "M13", "13"}),
+	Major9 (Major, Arrays.asList("maj9", "M9", "9")),
+	Major11 (Major, Arrays.asList("maj11", "M11", "11")),
+	Major13 (Major, Arrays.asList("maj13", "M13", "13")),
 	
 	// weird ones
 	
-	AugmentedDominant7 (Major, new String[]{"7#5", "7(#5)"}),
-	AugmentedMajor7 (Major, new String[]{"maj7#5", "maj7(#5)"}),
+	AugmentedDominant7 (Major, Arrays.asList("7#5", "7(#5)")),
+	AugmentedMajor7 (Major, Arrays.asList("maj7#5", "maj7(#5)")),
 	
 	// TODO: I don't know what this one is - can't find it on wikipedia
-	Minor9 (Minor, new String[]{"min9", "m9","minor9"}),
+	Minor9 (Minor, Arrays.asList("min9", "m9","minor9")),
 	
 	
 	;
@@ -41,15 +44,15 @@ public enum ChordExtended {
 	 * TODO: add additional seventh chords
 	 */
 	
-	private String[] aliases;
+	private List<String> aliases;
 	private ChordQuality chordQuality;
 	
-	ChordExtended(ChordQuality chordQuality, String[] aliases) {
+	ChordExtended(ChordQuality chordQuality, List<String> aliases) {
 		this.chordQuality = chordQuality;
 		this.aliases = aliases;
 	}
 	
-	public String[] getAliases() {
+	public List<String> getAliases() {
 		return aliases;
 	}
 
@@ -63,11 +66,11 @@ public enum ChordExtended {
 	}
 	
 	
-	public static String[] getAllAliases() {
-		String[] result = new String[0];
+	public static List<String> getAllAliases() {
+		List<String> result = new ArrayList<String>();
 		
 		for (ChordExtended chordSeventh : values()) {
-			result = ArrayUtil.concatenate(result, chordSeventh.aliases);
+			result.addAll(chordSeventh.aliases);
 		}
 		
 		return result;

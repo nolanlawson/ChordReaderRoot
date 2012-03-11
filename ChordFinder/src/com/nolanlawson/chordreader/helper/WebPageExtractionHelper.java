@@ -7,6 +7,7 @@ import android.text.Html;
 import android.text.TextUtils;
 
 import com.nolanlawson.chordreader.ChordWebpage;
+import com.nolanlawson.chordreader.chords.NoteNaming;
 import com.nolanlawson.chordreader.chords.regex.ChordParser;
 import com.nolanlawson.chordreader.util.StringUtil;
 import com.nolanlawson.chordreader.util.UtilLogger;
@@ -43,7 +44,7 @@ public class WebPageExtractionHelper {
 	
 	private static Pattern multipleNewlinePattern = Pattern.compile("([ \t\r]*\n[\t\r ]*){2,}");
 	
-	public static String extractChordChart(ChordWebpage webpage, String html) {
+	public static String extractChordChart(ChordWebpage webpage, String html, NoteNaming noteNaming) {
 		
 		Pattern pattern = null;
 		
@@ -57,7 +58,7 @@ public class WebPageExtractionHelper {
 		if (matcher.find()) {
 			String chordHtml = matcher.group(1);
 			String chordTxt = convertHtmlToText(chordHtml);
-			if (ChordParser.containsLineWithChords(chordTxt)) {
+			if (ChordParser.containsLineWithChords(chordTxt, noteNaming)) {
 				return cleanUpText(chordTxt);
 			}
 		}
@@ -70,14 +71,14 @@ public class WebPageExtractionHelper {
 	 * @param html
 	 * @return
 	 */
-	public static String extractLikelyChordChart(String html) {
+	public static String extractLikelyChordChart(String html, NoteNaming noteNaming) {
 		
 		Matcher matcher = prePattern.matcher(html);
 		
 		while (matcher.find()) {
 			String preHtml = matcher.group(1);
 			String preTxt = convertHtmlToText(preHtml);
-			if (ChordParser.containsLineWithChords(preTxt)) {
+			if (ChordParser.containsLineWithChords(preTxt, noteNaming)) {
 				return cleanUpText(preTxt);
 			}
 		}

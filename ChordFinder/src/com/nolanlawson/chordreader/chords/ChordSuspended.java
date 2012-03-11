@@ -1,9 +1,10 @@
 package com.nolanlawson.chordreader.chords;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import com.nolanlawson.chordreader.util.ArrayUtil;
 
 /**
  * Class to indicate suspended fourth or suspended 2nd
@@ -12,24 +13,24 @@ import com.nolanlawson.chordreader.util.ArrayUtil;
  */
 public enum ChordSuspended {
 
-	Sus4 (new String[]{"sus4", "suspended", "sus"}),
-	Sus2 (new String[]{"sus2", "suspended2"});
+	Sus4 (Arrays.asList("sus4", "suspended", "sus")),
+	Sus2 (Arrays.asList("sus2", "suspended2"));
 	
-	private String[] aliases;
+	private List<String> aliases;
 	
-	ChordSuspended (String[] aliases) {
+	ChordSuspended (List<String> aliases) {
 		this.aliases = aliases;
 	}
 	
-	public String[] getAliases() {
+	public List<String> getAliases() {
 		return aliases;
 	}
 	
-	public static String[] getAllAliases() {
-		String[] result = new String[0];
+	public static List<String> getAllAliases() {
+		List<String> result = new ArrayList<String>();
 		
 		for (ChordSuspended chordSuspended : values()) {
-			result = ArrayUtil.concatenate(result, chordSuspended.aliases);
+			result.addAll(chordSuspended.aliases);
 		}
 		
 		return result;

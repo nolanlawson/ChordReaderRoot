@@ -72,6 +72,19 @@
     <string name="pref_category_appearance">Appearance</string>
     <string name="pref_category_configuration">Configuration</string>
     
+    <string name="pref_note_naming">note_naming</string>
+    <string name="pref_note_naming_title">Note Naming</string>
+    <string name="pref_note_naming_value_english">English</string>
+    <string name="pref_note_naming_value_northern">NorthernEuropean</string>
+    <string name="pref_note_naming_value_southern">SouthernEuropean</string>
+    <string name="pref_note_naming_english">English</string>
+    <string name="pref_note_naming_northern">Northern European</string>
+    <string name="pref_note_naming_southern">Southern European</string>
+    <string name="pref_note_naming_explanation_english">A, B, C, D, etc.</string>
+    <string name="pref_note_naming_explanation_northern">A, H, C, D, etc.</string>
+    <string name="pref_note_naming_explanation_southern">Do, Re, Mi, Fa, etc.</string>
+    <string name="pref_note_naming_default">@string/pref_note_naming_value_english</string>
+            
     <string name="settings">Settings</string>
     
     <string name="pref_first_run">first_run2</string>

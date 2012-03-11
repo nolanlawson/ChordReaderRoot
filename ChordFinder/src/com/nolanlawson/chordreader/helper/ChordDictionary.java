@@ -14,6 +14,7 @@ import android.content.Context;
 
 import com.nolanlawson.chordreader.R;
 import com.nolanlawson.chordreader.chords.Chord;
+import com.nolanlawson.chordreader.chords.NoteNaming;
 import com.nolanlawson.chordreader.chords.regex.ChordParser;
 import com.nolanlawson.chordreader.util.StringUtil;
 import com.nolanlawson.chordreader.util.UtilLogger;
@@ -41,7 +42,8 @@ public class ChordDictionary {
 				String chordText = tokens[0].trim();
 				String guitarChord = tokens[1].trim();
 				
-				Chord chord = ChordParser.parseChord(chordText);
+				// chord dictionary is currently just in English
+				Chord chord = ChordParser.parseChord(chordText, NoteNaming.English);
 				
 				if (chord == null) {
 					log.w("Unable to parse chord text '%s'; skipping", chordText);

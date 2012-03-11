@@ -1,9 +1,10 @@
-package com.nolanlawson.chordfinder.test;
+package com.nolanlawson.chordreader.test;
 
 import android.test.ActivityInstrumentationTestCase2;
 
 import com.nolanlawson.chordreader.FindChordsActivity;
 import com.nolanlawson.chordreader.chords.Chord;
+import com.nolanlawson.chordreader.chords.NoteNaming;
 import com.nolanlawson.chordreader.chords.regex.ChordParser;
 
 import static com.nolanlawson.chordreader.chords.ChordAdded.*;
@@ -16,7 +17,7 @@ public class RegexTest extends
 		ActivityInstrumentationTestCase2<FindChordsActivity> {
 
 	public RegexTest() {
-		super("com.nolanlawson.chordfinder", FindChordsActivity.class);
+		super("com.nolanlawson.chordreader", FindChordsActivity.class);
 	}
 
 	public void test1() {
@@ -91,17 +92,18 @@ public class RegexTest extends
 	}
 	
 	public void testContainsLineWithChords() {
-		assertFalse(ChordParser.containsLineWithChords(""));
-		assertFalse(ChordParser.containsLineWithChords("Hello world"));
-		assertFalse(ChordParser.containsLineWithChords("Hello my Coney Island baby\nHello my Coney Island gal"));
+		assertFalse(ChordParser.containsLineWithChords("", NoteNaming.English));
+		assertFalse(ChordParser.containsLineWithChords("Hello world", NoteNaming.English));
+		assertFalse(ChordParser.containsLineWithChords(
+				"Hello my Coney Island baby\nHello my Coney Island gal", NoteNaming.English));
 		
-		assertTrue(ChordParser.containsLineWithChords("C"));
-		assertTrue(ChordParser.containsLineWithChords("Hello world (C)"));
-		assertTrue(ChordParser.containsLineWithChords("Hello World\nC  F  G  Am"));
-		assertTrue(ChordParser.containsLineWithChords("C F G Am\nHello World"));
-		assertTrue(ChordParser.containsLineWithChords("(F#m) Hello world"));
+		assertTrue(ChordParser.containsLineWithChords("C", NoteNaming.English));
+		assertTrue(ChordParser.containsLineWithChords("Hello world (C)", NoteNaming.English));
+		assertTrue(ChordParser.containsLineWithChords("Hello World\nC  F  G  Am", NoteNaming.English));
+		assertTrue(ChordParser.containsLineWithChords("C F G Am\nHello World", NoteNaming.English));
+		assertTrue(ChordParser.containsLineWithChords("(F#m) Hello world", NoteNaming.English));
 		assertTrue(ChordParser.containsLineWithChords("Another Century of Fakers\nIntro: D\nD       A    " +
-				"\nThere are people going hungry every day"));
+				"\nThere are people going hungry every day", NoteNaming.English));
 		
 	}
 
@@ -109,7 +111,7 @@ public class RegexTest extends
 	
 	public void testRegex(String chordString, Chord expected) {
 		
-		Chord chord = ChordParser.parseChord(chordString);
+		Chord chord = ChordParser.parseChord(chordString, NoteNaming.English);
 		
 		assertEquals(expected, chord);
 

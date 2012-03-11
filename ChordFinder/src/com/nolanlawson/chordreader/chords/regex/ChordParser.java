@@ -1,7 +1,6 @@
 package com.nolanlawson.chordreader.chords.regex;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -15,6 +14,7 @@ import com.nolanlawson.chordreader.chords.ChordExtended;
 import com.nolanlawson.chordreader.chords.ChordQuality;
 import com.nolanlawson.chordreader.chords.ChordRoot;
 import com.nolanlawson.chordreader.chords.ChordSuspended;
+import com.nolanlawson.chordreader.chords.NoteNaming;
 import com.nolanlawson.chordreader.util.StringUtil;
 import com.nolanlawson.chordreader.util.UtilLogger;
 
@@ -31,13 +31,13 @@ public class ChordParser {
 	 * @param chordString
 	 * @return
 	 */
-	public static Chord parseChord(CharSequence chordString) {
+	public static Chord parseChord(CharSequence chordString, NoteNaming noteNaming) {
 		
-		Pattern pattern = ChordRegex.getChordPattern();
+		Pattern pattern = ChordRegexes.getChordPattern(noteNaming);
 		Matcher matcher = pattern.matcher(chordString);
 		
 		if (matcher.matches()) {
-			return convertMatchedPatternToChord(matcher);
+			return convertMatchedPatternToChord(matcher, noteNaming);
 			
 		}
 		
@@ -45,7 +45,7 @@ public class ChordParser {
 		
 	}
 	
-	private static Chord convertMatchedPatternToChord(Matcher matcher) {
+	private static Chord convertMatchedPatternToChord(Matcher matcher, NoteNaming noteNaming) {
 
 		String root = matcher.group(1);
 		String qualityOrSeventh = matcher.group(2);
@@ -53,7 +53,7 @@ public class ChordParser {
 		String sus = matcher.group(4);
 		String overridingRoot = matcher.group(5);
 		
-		ChordRoot chordRoot = ChordRoot.findByAlias(root);
+		ChordRoot chordRoot = noteNaming.findByAlias(root);
 		if (chordRoot == null) {
 			return null;
 		}
@@ -75,7 +75,7 @@ public class ChordParser {
 		ChordRoot overridingChordRoot = null;
 		
 		if (!TextUtils.isEmpty(overridingRoot)) {
-			overridingChordRoot = ChordRoot.findByAlias(overridingRoot.substring(1)); // cut off initial "/"
+			overridingChordRoot = noteNaming.findByAlias(overridingRoot.substring(1)); // cut off initial "/"
 		}
 		
 		Chord chord = Chord.newChord(
@@ -89,7 +89,7 @@ public class ChordParser {
 	 * @param text
 	 * @return
 	 */
-	public static boolean containsLineWithChords(String text) {
+	public static boolean containsLineWithChords(String text, NoteNaming noteNaming) {
 		
 		if (TextUtils.isEmpty(text == null ? null : text.trim())) {
 			return false;
@@ -98,7 +98,7 @@ public class ChordParser {
 		String[] lines = StringUtil.split(text, "\n");
 		
 		for (String line : lines) {
-			if (isLineContainingChords(line)) {
+			if (isLineContainingChords(line, noteNaming)) {
 				return true;
 			}
 		}
@@ -107,8 +107,8 @@ public class ChordParser {
 		
 	}
 
-	private static boolean isLineContainingChords(String line) {
-		return !findChordsInTextInLine(line, 0).isEmpty();
+	private static boolean isLineContainingChords(String line, NoteNaming noteNaming) {
+		return !findChordsInTextInLine(line, 0, noteNaming).isEmpty();
 
 	}
 
@@ -117,7 +117,7 @@ public class ChordParser {
 	 * @param text
 	 * @return
 	 */
-	public static List<ChordInText> findChordsInText(String text) {
+	public static List<ChordInText> findChordsInText(String text, NoteNaming noteNaming) {
 		
 		List<ChordInText> result = new ArrayList<ChordInText>();
 		
@@ -127,7 +127,7 @@ public class ChordParser {
 		
 		for (String line : lines) {
 			
-			result.addAll(findChordsInTextInLine(line, offset));
+			result.addAll(findChordsInTextInLine(line, offset, noteNaming));
 			
 			offset += line.length() + 1; // plus one for the \n
 			
@@ -140,7 +140,7 @@ public class ChordParser {
 		
 	}
 	
-	private static List<ChordInText> findChordsInTextInLine(String line, int offset) {
+	private static List<ChordInText> findChordsInTextInLine(String line, int offset, NoteNaming noteNaming) {
 		
 		if (TextUtils.isEmpty(line.trim())) {
 			return Collections.emptyList();
@@ -156,8 +156,8 @@ public class ChordParser {
 		
 		ChordInText[] candidateChordsInText = null;
 		
-		Pattern chordPattern = ChordRegex.getChordPattern();
-		Pattern chordWithParensPattern = ChordRegex.getChordWithParensPattern();
+		Pattern chordPattern = ChordRegexes.getChordPattern(noteNaming);
+		Pattern chordWithParensPattern = ChordRegexes.getChordWithParensPattern(noteNaming);
 		
 		for (int i = 0; i < tokens.length; i++) {
 			
@@ -166,7 +166,7 @@ public class ChordParser {
 			Matcher matcher = chordWithParensPattern.matcher(token);
 			if (matcher.find()) { // it's okay for it to just be part of the token in this case
 				// add a sure-fire chord with parens and continue
-				Chord chord = convertMatchedPatternToChord(matcher);
+				Chord chord = convertMatchedPatternToChord(matcher, noteNaming);
 				ChordInText chordInText = ChordInText.newChordInText(
 						chord, 
 						tokenInText.getStartIndex() + matcher.start() + offset + 1, // +1 for starting parenthesis 
@@ -177,7 +177,7 @@ public class ChordParser {
 				// add some candidate chordsInText to the array
 				matcher = chordPattern.matcher(token);
 				if (matcher.matches()) { // must match exactly
-					Chord chord = convertMatchedPatternToChord(matcher);
+					Chord chord = convertMatchedPatternToChord(matcher, noteNaming);
 					ChordInText chordInText = ChordInText.newChordInText(chord, tokenInText.getStartIndex() + offset, tokenInText.getEndIndex() + offset);
 					
 					if (candidateChordsInText == null) {
