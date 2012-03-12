@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>ChordFinder</name>
+	<name>ChordReaderTest</name>
 	<comment></comment>
 	<projects>
+		<project>ChordReader</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
