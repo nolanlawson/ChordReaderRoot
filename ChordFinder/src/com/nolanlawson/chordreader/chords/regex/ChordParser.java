@@ -22,8 +22,8 @@ public class ChordParser {
 
 	private static UtilLogger log = new UtilLogger(ChordParser.class);
 	// characters that may show up in a written chord
-	private static Pattern tokenPattern = Pattern.compile("[\\w#+/]+");
-	private static Pattern lowercaseWordPattern = Pattern.compile("[a-z]+");
+	private static final Pattern TOKEN_PATTERN = Pattern.compile("[\\w#+/]+");
+	private static final Pattern LOWERCASE_WORD_PATTERN = Pattern.compile("[a-z]+");
 	
 	
 	/**
@@ -232,7 +232,7 @@ public class ChordParser {
 				// case where "A" is followed by a lowercase word, e.g. "lady"
 				if (candidateChordString.equals("A") 
 						&& i + 1 < tokens.length
-						&& lowercaseWordPattern.matcher(tokens[i + 1].getToken()).matches()) {
+						&& LOWERCASE_WORD_PATTERN.matcher(tokens[i + 1].getToken()).matches()) {
 					// unlikely to be a chord
 					continue;
 					
@@ -250,7 +250,7 @@ public class ChordParser {
 		
 		List<TokenInText> result = new ArrayList<TokenInText>();
 		
-		Matcher matcher = tokenPattern.matcher(line);
+		Matcher matcher = TOKEN_PATTERN.matcher(line);
 		
 		while (matcher.find()) {
 			result.add(TokenInText.newTokenInText(matcher.group(), matcher.start(), matcher.end()));

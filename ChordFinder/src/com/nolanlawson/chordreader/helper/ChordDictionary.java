@@ -87,6 +87,7 @@ public class ChordDictionary {
 	}
 
 	public static List<String> getGuitarChordsForChord(Chord chord) {
-		return chordsToGuitarChords.get(chord);
+		List<String> result = chordsToGuitarChords.get(chord);
+		return result != null ? result : Collections.<String>emptyList();
 	}
 }
