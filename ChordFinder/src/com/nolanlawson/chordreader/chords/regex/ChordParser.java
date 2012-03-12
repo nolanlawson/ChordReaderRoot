@@ -224,7 +224,7 @@ public class ChordParser {
 				// case where "Am" is followed by "I"
 				if (candidateChordString.equals("Am") 
 						&& i + 1 < tokens.length
-						&& tokens[i + 1].equals("I")) {
+						&& "Am I".equals(line.substring(tokens[i].getStartIndex(), tokens[i+1].getEndIndex()))) {
 					// unlikely to be a chord
 					continue;
 					
@@ -232,7 +232,8 @@ public class ChordParser {
 				// case where "A" is followed by a lowercase word, e.g. "lady"
 				if (candidateChordString.equals("A") 
 						&& i + 1 < tokens.length
-						&& LOWERCASE_WORD_PATTERN.matcher(tokens[i + 1].getToken()).matches()) {
+						&& LOWERCASE_WORD_PATTERN.matcher(tokens[i + 1].getToken()).matches()
+						&& StringUtil.isAllWhitespace(line.substring(tokens[i].getEndIndex(), tokens[i+1].getStartIndex()))) {
 					// unlikely to be a chord
 					continue;
 					

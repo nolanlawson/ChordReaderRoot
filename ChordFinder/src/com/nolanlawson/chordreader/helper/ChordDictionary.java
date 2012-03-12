@@ -56,7 +56,6 @@ public class ChordDictionary {
 				String chordText = tokens[0].trim();
 				String guitarChord = tokens[1].trim();
 				
-				// chord dictionary is currently just in English
 				Chord chord = ChordParser.parseChord(chordText, noteNaming);
 				
 				if (chord == null) {

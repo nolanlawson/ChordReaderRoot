@@ -183,4 +183,13 @@ public class StringUtil {
     	
     	return sb.toString();	
     }
+    
+    public static boolean isAllWhitespace(CharSequence str) {
+    	for (int i = 0; i < str.length(); i++) {
+    		if (!Character.isWhitespace(str.charAt(i))) {
+    			return false;
+    		}
+    	}
+    	return true;
+    }
 }

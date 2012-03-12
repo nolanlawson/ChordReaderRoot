@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Enum for add9 and add11.
+ * Enum for add9, add11, power chords, etc.
  * @author nolan
  *
  */
