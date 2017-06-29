@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Chord Reader</string>
+    <string name="about_chord_reader">Sobre o Chord Reader</string>
+    <string name="find_chords_intro_message">Primeiro, procure na internet para encontrar acordes.</string>
+    <string name="find_chords_second_message">Assim que você tiver encontrado os acordes que deseja, clique aqui.</string>
+    <string name="loading">Carregando...</string>
+    <string name="chord_search_hint">Digite o nome do artista/música</string>
+    <string name="chords_keyword">acordes</string>
+    <string name="chords_found">Acordes identificados. Clique aqui para confirmar.</string>
+    <string name="confirm_chordchart">Confirme os Acordes</string>
+    <string name="enter_filename">Digite um nome de arquivo para salvar para o cartão SD:</string>
+    <string name="save_chordchart">Salvar Gráfico de Acrodes</string>
+    <string name="sd_card_not_found">Cartão SD não encontrado.</string>
+    <string name="save_file">Salvar Arquivo</string>
+    <string name="file_saved">O arquivo foi salvo.</string>
+    <string name="unable_to_save_file">Não foi possível salvar o arquivo.</string>
+    <string name="enter_good_filename">Por favor digite um nome de arquivo válido.</string>
+    <string name="save">Salvar</string>
+    <string name="about">Sobre</string>
+    <string name="open_file">Abrir Arquivo</string>
+    <string name="manage_saved_files">Gerenciar Arquivos</string>
+    <string name="no_saved_files">Nenhum arquivo salvo encontrado.</string>
+    <string name="search_for_chords">Buscar</string>
+    <string name="save_chords">Salvar</string>
+    <string name="overwrite_file">O arquivo existente será sobrescrito.</string>
+    <string name="overwrite_file_title">Sobrescrever Arquivo</string>
+    <string name="transpose">Transpôr</string>
+    <string name="select_files_to_delete">Selecione os arquivos para excluir.</string>
+    <string name="delete_all">Excluir Tudo</string>
+    <string name="delete_saved_file">Excluir Arquivo(s)</string>
+    <string name="are_you_sure">Tem certeza? %d arquivo(s) serão excluído(s).</string>
+    <string name="files_deleted">%d arquivo(s) excluído(s).</string>
+    <string name="capo_title">Capo on Fret:</string>
+    <string name="transpose_title">Transpôr (meios-passos):</string>
+    <string name="refresh">Atualizar</string>
+    <string name="stop">Parar</string>
+    <string name="stopping">Parando...</string>
+    <string name="transposing">Transpondo</string>
+    <string name="please_wait">Por favor aguarde...</string>
+    <string name="loading_title">Carregando</string>
+    <string name="sort_az">Ordenar A-Z</string>
+    <string name="sort_by_date">Ordenar por Data</string>
+    <string name="edit">Editar</string>
+    <string name="edit_chords">Editar Acordes</string>
+    
+    <string name="no_guitar_chord_available">Posição dos dedos para violão não disponível.</string>
+    <string name="variation">Var.</string>
+    
+	<string name="pref_text_size">text_size</string>
+	<string name="pref_text_size_title">Tamanho do Texto</string>
+	
+	<string name="text_size_xsmall_value">PP</string>
+	<string name="text_size_small_value">P</string>
+    <string name="text_size_medium_value">M</string>
+    <string name="text_size_large_value">G</string>
+    <string name="text_size_xlarge_value">GG</string>
+
+	<string name="text_size_xsmall_name">Extra Pequeno (8pt)</string>
+	<string name="text_size_small_name">Pequeno (10pt)</string>
+    <string name="text_size_medium_name">Médio (12pt)</string>
+    <string name="text_size_large_name">Grande (14pt)</string>
+    <string name="text_size_xlarge_name">Extra Grande (16pt)</string>
+    
+    <string name="pref_scheme">color_scheme</string>
+    <string name="pref_scheme_title">Esquema de Cores</string>
+    <string name="pref_scheme_dark">Escuro</string>
+    <string name="pref_scheme_light">Claro</string>
+    <string name="pref_scheme_android">Android</string>
+    
+    <string name="pref_category_appearance">Aparência</string>
+    <string name="pref_category_configuration">Configuração</string>
+    
+    <string name="pref_note_naming">note_naming</string>
+    <string name="pref_note_naming_title">Nomeação das Notas</string>
+    <string name="pref_note_naming_value_english">English</string>
+    <string name="pref_note_naming_value_northern">NorthernEuropean</string>
+    <string name="pref_note_naming_value_southern">SouthernEuropean</string>
+    <string name="pref_note_naming_english">Inglês</string>
+    <string name="pref_note_naming_northern">Norte-Europeu</string>
+    <string name="pref_note_naming_southern">Sul-Europeu</string>
+    <string name="pref_note_naming_explanation_english">A, B, C, D, etc.</string>
+    <string name="pref_note_naming_explanation_northern">A, H, C, D, etc.</string>
+    <string name="pref_note_naming_explanation_southern">Do, Re, Mi, Fa, etc.</string>
+    <string name="pref_note_naming_default">@string/pref_note_naming_value_english</string>
+            
+    <string name="settings">Configurações</string>
+    
+    <string name="pref_first_run">first_run3</string>
+    <string name="pref_first_run_title">Redefinir Introdução</string>
+    <string name="pref_first_run_summary">Mostrar mensagem introdutória novamente.</string>
+    <string name="first_run_title">Bem-Vindo ao Chord Reader!</string>
+    <string name="first_run_message">\
+<b>What\'s new in 1.0?</b>\n\
+&#160;&#160;&#160;* Nomes das Notas:\n\
+&#160;&#160;&#160;&#160;&#160;&#160;- Inglês (A, B, C)\n\
+&#160;&#160;&#160;&#160;&#160;&#160;- N. Europeu (A, H, C)\n\
+&#160;&#160;&#160;&#160;&#160;&#160;- S. Europeu (Do, Re, Mi)\n\
+&#160;&#160;&#160;* A janela flutuante mostra diversas posições dos dedos.\n\
+&#160;&#160;&#160;* Remover anúncios.\n\
+&#160;&#160;&#160;* Aplicativo open-source.\n\n\
+O Chord Reader é <b>software livre</b>. Se você gostaria de doar, vá até <a href='http://nolanlawson.com'>o site</a>!\
+</string> 
+
+    
+</resources>
